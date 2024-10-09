@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "seren-ai-langgraph"
+version = "0.1.0"
+description = ""
+authors = ["Kyle <kylcheng@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+langsmith = "^0.1.132"
+langgraph = "^0.2.34"
+langchain-anthropic = "^0.2.3"
+ipython = "^8.28.0"
+load-dotenv = "^0.1.0"
+langchain-openai = "^0.2.2"
+langchain-community = "^0.3.1"
+langchain-groq = "^0.2.0"
+
+[tool.poetry.dev-dependencies]
+langgraph-cli = "^0.1.52"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

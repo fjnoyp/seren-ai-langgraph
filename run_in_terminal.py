@@ -1,5 +1,5 @@
 
-from agent import run_ai_with_user_input
+from agent import run_ai_with_custom_input, run_ai_with_user_input
 
 while True:
     try:
@@ -8,12 +8,13 @@ while True:
             print("Goodbye!")
             break
 
-        results = run_ai_with_user_input(user_input)
+        results = run_ai_with_custom_input(user_input)
         print(results[-1].pretty_print())        
-    except:
+    except Exception as e:
+        print("An exception occurred: ", e)
         # fallback if input() is not available
-        user_input = "What do you know about LangGraph?"
-        print("User: " + user_input)
-        results = run_ai_with_user_input(user_input)
-        print(results[-1].pretty_print())        
+        # user_input = "What do you know about LangGraph?"
+        # print("User: " + user_input)
+        # results = run_ai_with_user_input(user_input)
+        # print(results[-1].pretty_print())        
         break

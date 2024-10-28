@@ -1,7 +1,7 @@
 from langchain_core.tools import tool
 from typing import Annotated
 
-from tool_context_manager import tool_context
+from agent.tools.tool_context_manager import tool_context
 
 # === SHIFT TOOLS ===
 # 1) Get current shift

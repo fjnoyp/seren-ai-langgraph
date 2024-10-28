@@ -36,9 +36,9 @@ from langchain_core.runnables.config import RunnableConfig
 
 from pydantic import BaseModel, Field
 
-from agent_state import AgentState
-import task_tools
-from tool_node import tool_node, get_all_tools
+from agent.agent_state import AgentState
+
+from agent.tools.tool_node import tool_node, get_all_tools
 
 # MAIN TODO
 # 1. Make basic calls to graph from javascript and then flutter code

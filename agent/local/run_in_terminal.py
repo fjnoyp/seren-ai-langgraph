@@ -1,5 +1,5 @@
 
-from run_ai import run_ai_with_custom_input, run_ai_with_user_input
+from agent.local.run_ai import run_ai_with_custom_input, run_ai_with_user_input
 
 while True:
     try:

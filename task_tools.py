@@ -33,4 +33,6 @@ def request_to_delete_task(task_name: Annotated[str, ""]) -> str:
     """Delete a task"""
     return f"Requested to delete task: {task_name}"
 
-task_tools = [request_to_create_task, find_task, update_task_status, request_to_delete_task]
+
+def get_tools():
+    return [request_to_create_task, find_task, update_task_status, request_to_delete_task]

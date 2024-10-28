@@ -1,3 +1,5 @@
+from contextlib import contextmanager
+from contextvars import ContextVar
 from langchain_anthropic import ChatAnthropic
 from langchain_openai import ChatOpenAI
 from langchain_groq import ChatGroq
@@ -13,7 +15,6 @@ from langgraph.graph.message import add_messages
 
 from typing import Annotated
 
-from langchain_community.tools.tavily_search import TavilySearchResults
 from typing_extensions import TypedDict
 
 from langgraph.checkpoint.memory import MemorySaver
@@ -35,7 +36,9 @@ from langchain_core.runnables.config import RunnableConfig
 
 from pydantic import BaseModel, Field
 
+from agent_state import AgentState
 import task_tools
+from tool_node import tool_node, get_all_tools
 
 # MAIN TODO
 # 1. Make basic calls to graph from javascript and then flutter code
@@ -56,30 +59,17 @@ class ConfigSchema(TypedDict):
     org_id: str
 
 
-class AgentState(TypedDict):
-    messages: Annotated[list, add_messages]
 
 
 graph_builder = StateGraph(AgentState, ConfigSchema)
 
-# ==================
-# === TOOLS ===
-# ==================
-
-# === TAVILY TOOL ===
-tavily = TavilySearchResults(max_results=2)
 
 
-# === SHIFTS TOOL ===
-# Goal: get current shift / clock in or out of current shift / get shift history for specific day / ask questions about shifts?
 
 
-tools = [
-    *task_tools,
-    # tavily,
-]
+graph_builder.add_node("tools", tool_node)
 
-graph_builder.add_node("tools", ToolNode(tools))
+
 
 # Thoughts
 # How should tool structuring be done?
@@ -101,16 +91,20 @@ graph_builder.add_node("tools", ToolNode(tools))
 # https://console.anthropic.com/settings/billing
 llm = ChatAnthropic(model="claude-3-5-sonnet-20240620")
 
-llm_with_tools = llm.bind_tools(tools)
+llm_with_tools = llm.bind_tools(get_all_tools())
 
 
 def chatbot(state: AgentState, config: RunnableConfig):
 
-    # Check the config object
-    print("Config:")
-
     user_id = config["configurable"].get("user_id")
     org_id = config["configurable"].get("org_id")
+
+    print("User ID: " + user_id)
+    print("Org ID: " + org_id)
+
+    if(user_id is None or org_id is None):
+        return {"messages": [AIMessage(content="Warning - No user_id or org_id found in assistant config")]}
+    
 
     # Return config variables to check they are received
     # return {"messages" : AIMessage(content= "user_id: " + user_id + " org_id: " + org_id)}

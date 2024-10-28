@@ -3,8 +3,8 @@ from langsmith.schemas import Run, Example
 from langsmith.evaluation import evaluate
 import json
 
-from agent import State, run_ai_with_messages
-
+from run_ai import run_ai_with_messages
+from agent import AgentState
 
 # === Read in Langsmith Dataset Examples ===
 client = Client()
@@ -15,7 +15,7 @@ examples = client.list_examples(dataset_name=dataset_name)
 # === Define AI system wrapper ===
 def predict(inputs: dict) -> dict:
     messages = inputs["messages"]
-    return State(messages=run_ai_with_messages(messages))
+    return AgentState(messages=run_ai_with_messages(messages))
 
 # === Define Evaluators === 
 def test_evaluator(run: Run, example: Example) -> dict:

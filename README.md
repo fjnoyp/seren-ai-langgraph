@@ -33,6 +33,8 @@ Ref: https://langchain-ai.github.io/langgraph/cloud/quick_start/
 
 # Considerations
 
+- LangGraph Cloud handles all memory management and checkpointing - unlike normal LangGraph.
+
 - Restart the terminal whenever you update the .env file - otherwise old values will be used 
 
 - The Langchain BaseMessage types are not the same as the key/value input/output examples from LangSmith. The same fields exist, but BaseMessage is a type while LangSmith provides dictionaries. 

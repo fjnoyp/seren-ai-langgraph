@@ -36,9 +36,9 @@ from langchain_core.runnables.config import RunnableConfig
 
 from pydantic import BaseModel, Field
 
-from agent.agent_state import AgentState
+from src.agent_state import AgentState
 
-from agent.tools.tool_node import tool_node, get_all_tools
+from src.tools.tool_node import get_ai_request_tools, tool_node, get_all_tools
 
 # MAIN TODO
 # 1. Make basic calls to graph from javascript and then flutter code
@@ -54,20 +54,17 @@ load_dotenv()
 # Any inputs to Graph must be of this type
 
 
-class ConfigSchema(TypedDict):
-    user_id: str
-    org_id: str
+# class ConfigSchema(TypedDict):
+#     user_id: str
+#     org_id: str
 
 
-
-
-graph_builder = StateGraph(AgentState, ConfigSchema)
+graph_builder = StateGraph(AgentState) #, ConfigSchema)
 
 
 
 
 
-graph_builder.add_node("tools", tool_node)
 
 
 
@@ -96,16 +93,15 @@ llm_with_tools = llm.bind_tools(get_all_tools())
 
 def chatbot(state: AgentState, config: RunnableConfig):
 
-    user_id = config["configurable"].get("user_id")
-    org_id = config["configurable"].get("org_id")
+    # user_id = config["configurable"].get("user_id")
+    # org_id = config["configurable"].get("org_id")
 
-    print("User ID: " + user_id)
-    print("Org ID: " + org_id)
+    # print("User ID: " + user_id)
+    # print("Org ID: " + org_id)
 
-    if(user_id is None or org_id is None):
-        return {"messages": [AIMessage(content="Warning - No user_id or org_id found in assistant config")]}
+    # if(user_id is None or org_id is None):
+    #     return {"messages": [AIMessage(content="Warning - No user_id or org_id found in assistant config")]}
     
-
     # Return config variables to check they are received
     # return {"messages" : AIMessage(content= "user_id: " + user_id + " org_id: " + org_id)}
 
@@ -133,30 +129,61 @@ def chatbot(state: AgentState, config: RunnableConfig):
     return {"messages": [response]}
 
 
-graph_builder.add_node("chatbot", chatbot)
 
-
-def select_next_node(state: AgentState):
-    return tools_condition(state)
-
-
-graph_builder.add_conditional_edges(
-    "chatbot", select_next_node, {"tools": "tools", END: END}
-)
 
 
 # TODO work on tool execution conditional branching
-def tool_execution(state: AgentState):
-    return END
+def check_ai_request(state: AgentState):
+    messages = state["messages"]
+    last_message = messages[-1]
+
+    if not last_message.tool_calls:
+        return END
+    elif last_message.tool_calls[0].function.name in get_ai_request_tools():
+        return "execute_ai_request_on_client"
+    else: 
+        return END 
 
 
-graph_builder.add_conditional_edges("tools", tool_execution, {END: END})
+
+# Fake node to ask client 
+# Exepct caller to manually modify graph state with results 
+def execute_ai_request_on_client(state: AgentState):
+    pass
+
+
+
+graph_builder.add_node("chatbot", chatbot)
+
+
+graph_builder.add_conditional_edges(
+    "chatbot", tools_condition, {"tools": "tools", END: END}
+)
+
+graph_builder.add_node("tools", tool_node)
+
+# graph_builder.add_conditional_edges(
+#     "tools", 
+#     check_ai_request, 
+#     {
+#         "execute_ai_request_on_client": "execute_ai_request_on_client",
+#         END: END
+#     }
+# )
+
+graph_builder.add_edge("tools", END)
+
+#graph_builder.add_node("execute_ai_request_on_client", execute_ai_request_on_client)
 
 # graph_builder.set_entry_point("chatbot")
 graph_builder.add_edge(START, "chatbot")
+
+
 
 graph_builder.add_edge("chatbot", END)
 
 # === Compile Graph ===
 # No memory is needed for cloud
-graph = graph_builder.compile()
+graph = graph_builder.compile(
+    #interrupt_before=["execute_ai_request_on_client"],
+)

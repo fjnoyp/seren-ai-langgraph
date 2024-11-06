@@ -4,6 +4,8 @@
 If the poetry environment doesn't run, manually start via: 
 `poetry shell` 
 
+Install dependencies: 
+`poetry install`
 
 
 

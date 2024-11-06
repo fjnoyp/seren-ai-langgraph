@@ -1,6 +1,6 @@
+from src.local.run_ai import run_ai_with_custom_input, run_ai_with_user_input
 
-from agent.local.run_ai import run_ai_with_custom_input, run_ai_with_user_input
-
+# Run: poetry run python -m src.local.run_in_terminal
 while True:
     try:
         user_input = input("User: ")

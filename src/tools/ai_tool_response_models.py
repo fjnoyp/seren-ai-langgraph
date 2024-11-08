@@ -33,7 +33,7 @@ class AiActionRequestModel(AiToolRequestModel):
     args: dict[str, str] = None  # Make args optional / nullable
 
     def __init__(self, action_request_type: AiActionRequestType, args: dict[str, str] = None):
-        super().__init__(AiRequestType.INFO_REQUEST)
+        super().__init__(AiRequestType.ACTION_REQUEST)
         self.action_request_type = action_request_type
         self.args = args
 
@@ -88,7 +88,7 @@ class AiInfoRequestModel(AiToolRequestModel):
 
     def to_dict(self):
         base_dict = super().to_dict()
-        base_dict.update({
+        base_dict.update({            
             "info_request_type": self.info_request_type.value,
             "args": self.args,
             "show_only": self.show_only

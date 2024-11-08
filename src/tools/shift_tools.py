@@ -22,7 +22,7 @@ def get_current_shift_info(show_only: Annotated[bool, "If True, only shows the s
         info_request_type=AiInfoRequestType.CURRENT_SHIFT,
         show_only=show_only
     )
-    return json.dumps([response.to_dict()])
+    return json.dumps(response.to_dict())
 
 @tool()
 def clock_in_or_out(clock_in: Annotated[bool, "If True, clocks in. If False, clocks out."]) -> str: 
@@ -30,7 +30,7 @@ def clock_in_or_out(clock_in: Annotated[bool, "If True, clocks in. If False, clo
     response = AiActionRequestModel(
         action_request_type=AiActionRequestType.CLOCK_IN if clock_in else AiActionRequestType.CLOCK_OUT
     )
-    return json.dumps([response.to_dict()])
+    return json.dumps(response.to_dict())
 
 def get_all_tools():
     return [get_current_shift_info, clock_in_or_out]

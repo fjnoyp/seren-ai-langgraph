@@ -24,7 +24,7 @@ from langgraph.prebuilt import ToolNode, tools_condition
 
 from pydantic import BaseModel
 
-from langchain_core.messages import AIMessage, ToolMessage, HumanMessage, trim_messages
+from langchain_core.messages import AIMessage, ToolMessage, HumanMessage, SystemMessage, trim_messages
 
 from langchain_core.messages.tool import ToolCall
 
@@ -39,6 +39,22 @@ from pydantic import BaseModel, Field
 from src.agent_state import AgentState
 
 from src.tools.tool_node import get_ai_request_tools, tool_node, get_all_tools
+
+from functools import wraps
+
+# Error Handling 
+def error_handler(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            print(f"Error in {func.__name__}:")
+            import traceback
+            print(traceback.format_exc())
+            raise
+    return wrapper
+
 
 # MAIN TODO
 # 1. Make basic calls to graph from javascript and then flutter code
@@ -105,6 +121,7 @@ def chatbot(state: AgentState, config: RunnableConfig):
     # Return config variables to check they are received
     # return {"messages" : AIMessage(content= "user_id: " + user_id + " org_id: " + org_id)}
 
+    # Get last 3 messages
     messages = trim_messages(
         state["messages"],
         # only use last 3 messages
@@ -125,6 +142,9 @@ def chatbot(state: AgentState, config: RunnableConfig):
         include_system=True,
     )
 
+    # Add system message to prompt
+    messages.append(SystemMessage(content="Keep answers short as possible"))
+
     response = llm_with_tools.invoke(messages)
     return {"messages": [response]}
 
@@ -137,13 +157,24 @@ def check_ai_request(state: AgentState):
     messages = state["messages"]
     last_message = messages[-1]
 
-    if not last_message.tool_calls:
+    if not isinstance(last_message, ToolMessage):
         return END
-    elif last_message.tool_calls[0].function.name in get_ai_request_tools():
+    elif last_message.name in get_ai_request_tools():
         return "execute_ai_request_on_client"
     else: 
         return END 
 
+
+# TODO : rename from show only and continue execution 
+# Determine how ai will either continue execcution or end here ... 
+def check_ai_result(state: AgentState):
+    messages = state["messages"]
+    last_message = messages[-1]
+
+    if not isinstance(last_message, ToolMessage):
+        return END
+    else:
+        return "run_with_result"
 
 
 # Fake node to ask client 
@@ -162,18 +193,26 @@ graph_builder.add_conditional_edges(
 
 graph_builder.add_node("tools", tool_node)
 
-# graph_builder.add_conditional_edges(
-#     "tools", 
-#     check_ai_request, 
-#     {
-#         "execute_ai_request_on_client": "execute_ai_request_on_client",
-#         END: END
-#     }
-# )
+graph_builder.add_conditional_edges(
+    "tools", 
+    check_ai_request, 
+    {
+        "execute_ai_request_on_client": "execute_ai_request_on_client",
+        END: END
+    }
+)
 
 graph_builder.add_edge("tools", END)
 
-#graph_builder.add_node("execute_ai_request_on_client", execute_ai_request_on_client)
+graph_builder.add_node("execute_ai_request_on_client", execute_ai_request_on_client)
+
+graph_builder.add_conditional_edges(
+    "execute_ai_request_on_client", 
+    check_ai_result,
+    {
+        "run_with_result": "chatbot", 
+        END: END}
+)
 
 # graph_builder.set_entry_point("chatbot")
 graph_builder.add_edge(START, "chatbot")
@@ -185,5 +224,7 @@ graph_builder.add_edge("chatbot", END)
 # === Compile Graph ===
 # No memory is needed for cloud
 graph = graph_builder.compile(
-    #interrupt_before=["execute_ai_request_on_client"],
+    interrupt_before=["execute_ai_request_on_client"],
 )
+
+

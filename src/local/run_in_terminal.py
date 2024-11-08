@@ -12,6 +12,7 @@ while True:
         print(results[-1].pretty_print())        
     except Exception as e:
         print("An exception occurred: ", e)
+        print("Please check Langsmith for details")
         # fallback if input() is not available
         # user_input = "What do you know about LangGraph?"
         # print("User: " + user_input)

@@ -15,6 +15,68 @@ from src.tools.tool_context_manager import tool_context
 # 3) Get shift history for specific day
 # 4) Ask questions about shifts?
 
+
+
+# get shift for week 
+# but what about overrides ... 
+# then need base time ... 
+# tomorrow / yesterday / next week / next month ? 
+# specific days / weeks / months ... ? 
+# we need a way to convert time references to actual times ... 
+
+@tool 
+def get_shift_assignments(
+    dayOffsetsToGet: Annotated[ list[int], "1 = tomorrow, -1 = yesterday, 7 = next week, etc." ],
+    show_only: Annotated[bool, "If True, only shows the shift info without further actions"] = False) -> str:     
+    """Get shift assignments (times you need to clock in/out of work) for specific days"""
+    response = AiInfoRequestModel(
+        info_request_type=AiInfoRequestType.SHIFT_ASSIGNMENTS,
+        args={
+            "day_offsets_to_get": dayOffsetsToGet,            
+        },
+        show_only=show_only
+    )
+    return json.dumps(response.to_dict())
+
+@tool
+def get_shift_logs(    
+    dayOffsetsToGet: Annotated[ list[int], "1 = tomorrow, -1 = yesterday, 7 = next week, etc." ],
+    show_only: Annotated[bool, "If True, only shows the shift info without further actions"] = False
+    ) -> str:
+    """Get shift logs (times you clocked in/out of work) for specific days"""
+    response = AiInfoRequestModel(
+        info_request_type=AiInfoRequestType.SHIFT_LOGS,
+        args={
+            "day_offsets_to_get": dayOffsetsToGet,            
+        },
+        show_only=show_only
+    )
+    return json.dumps(response.to_dict())
+
+@tool()
+def toggle_clock_in_or_out() -> str: 
+    """Clock in if not clocked in or out otherwise"""
+    response = AiActionRequestModel(
+        action_request_type=AiActionRequestType.TOGGLE_CLOCK_IN_OR_OUT
+    )
+    return json.dumps(response.to_dict())
+
+
+
+
+
+def get_all_tools():
+    return [get_shift_assignments, get_shift_logs, toggle_clock_in_or_out]
+
+def get_ai_request_tools():
+    return [get_shift_assignments, get_shift_logs, toggle_clock_in_or_out]
+
+
+
+
+
+
+
 @tool()
 def get_current_shift_info(show_only: Annotated[bool, "If True, only shows the shift info without further actions"] = False) -> str:
     """Gets information about the current shift."""
@@ -23,19 +85,3 @@ def get_current_shift_info(show_only: Annotated[bool, "If True, only shows the s
         show_only=show_only
     )
     return json.dumps(response.to_dict())
-
-@tool()
-def clock_in_or_out(clock_in: Annotated[bool, "If True, clocks in. If False, clocks out."]) -> str: 
-    """Clock in or out of the current shift."""
-    response = AiActionRequestModel(
-        action_request_type=AiActionRequestType.CLOCK_IN if clock_in else AiActionRequestType.CLOCK_OUT
-    )
-    return json.dumps(response.to_dict())
-
-def get_all_tools():
-    return [get_current_shift_info, clock_in_or_out]
-
-def get_ai_request_tools():
-    return [get_current_shift_info, clock_in_or_out]
-
-

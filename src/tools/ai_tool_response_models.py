@@ -25,8 +25,7 @@ class AiToolRequestModel:
 
 # === AI asking for action that client can perform === 
 class AiActionRequestType(Enum):
-    CLOCK_IN = "clock_in"
-    CLOCK_OUT = "clock_out"
+    TOGGLE_CLOCK_IN_OR_OUT = "toggle_clock_in_or_out"
 
 class AiActionRequestModel(AiToolRequestModel):
     action_request_type: AiActionRequestType
@@ -72,8 +71,10 @@ class AiUiActionRequestModel(AiToolRequestModel):
 # === AI asking for information === 
 # Implicitly asks client to call with the info response 
 class AiInfoRequestType(Enum):
-    SHIFT_HISTORY = "shift_history"
+    #SHIFT_HISTORY = "shift_history"
     CURRENT_SHIFT = "current_shift"
+    SHIFT_ASSIGNMENTS = "shift_assignments"
+    SHIFT_LOGS = "shift_logs"
 
 class AiInfoRequestModel(AiToolRequestModel):
     info_request_type: AiInfoRequestType

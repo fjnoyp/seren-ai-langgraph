@@ -15,7 +15,6 @@ from langgraph.graph.message import add_messages
 
 from typing import Annotated
 
-from typing_extensions import TypedDict
 
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import StateGraph
@@ -24,7 +23,7 @@ from langgraph.prebuilt import ToolNode, tools_condition
 
 from pydantic import BaseModel
 
-from langchain_core.messages import AIMessage, ToolMessage, HumanMessage, SystemMessage, trim_messages
+from langchain_core.messages import BaseMessage, AIMessage, ToolMessage, HumanMessage, SystemMessage, trim_messages
 
 from langchain_core.messages.tool import ToolCall
 
@@ -38,9 +37,13 @@ from pydantic import BaseModel, Field
 
 from src.agent_state import AgentState
 
+from src.config_schema import ConfigSchema
 from src.tools.tool_node import get_ai_request_tools, tool_node, get_all_tools
 
 from functools import wraps
+
+from datetime import datetime, timedelta, timezone
+
 
 # Error Handling 
 def error_handler(func):
@@ -70,12 +73,10 @@ load_dotenv()
 # Any inputs to Graph must be of this type
 
 
-# class ConfigSchema(TypedDict):
-#     user_id: str
-#     org_id: str
 
 
-graph_builder = StateGraph(AgentState) #, ConfigSchema)
+
+graph_builder = StateGraph(AgentState, ConfigSchema)
 
 
 
@@ -122,12 +123,12 @@ def chatbot(state: AgentState, config: RunnableConfig):
     # return {"messages" : AIMessage(content= "user_id: " + user_id + " org_id: " + org_id)}
 
     # Get last 3 messages
-    messages = trim_messages(
+    messages : list[BaseMessage] = trim_messages(
         state["messages"],
-        # only use last 3 messages
+        # only use last 4 messages
         strategy="last",
         token_counter=len,
-        max_tokens=3,
+        max_tokens=4,
         # Most chat models expect that chat history starts with either:
         # (1) a HumanMessage or
         # (2) a SystemMessage followed by a HumanMessage
@@ -142,8 +143,25 @@ def chatbot(state: AgentState, config: RunnableConfig):
         include_system=True,
     )
 
+    # First check that config vars are present 
+    if config["configurable"].get("timezone_offset_minutes") is None or config["configurable"].get("language") is None:
+        return {"messages": [AIMessage(content="Warning - No timezone_offset or language found in assistant config")]}
+
+     # Calculate time of day from config 
+    timezone_offset_minutes = config["configurable"].get("timezone_offset_minutes")
+    
+    # Convert offset minutes to UTC timezone
+    tz = timezone(timedelta(minutes=timezone_offset_minutes))
+    current_datetime = datetime.now(tz)
+
+    language = config["configurable"].get("language")
+
     # Add system message to prompt
-    messages.append(SystemMessage(content="Keep answers short as possible"))
+    messages.insert(0, SystemMessage(
+        content="""
+        Keep answers short as possible. 
+        The current date and time is: {}
+        Only respond in language: {}""".format(current_datetime, language)))
 
     response = llm_with_tools.invoke(messages)
     return {"messages": [response]}
@@ -178,7 +196,8 @@ def check_ai_result(state: AgentState):
 
 
 # Fake node to ask client 
-# Exepct caller to manually modify graph state with results 
+# I think - because we interrupt here - it allows us to resume ai execution 
+# By passing in empty message, otherwise nothing would happen 
 def execute_ai_request_on_client(state: AgentState):
     pass
 

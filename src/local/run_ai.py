@@ -16,8 +16,10 @@ example = [{"role": "human", "content": "how are you?"}]
 # For now we hardcode the config object used
 # Config is auto updated by the graph
 config = {"configurable": {
+    "user_id": "2758cac4-304a-46d8-941f-ef0277f0056a",
     "org_id": "a7666926-89b4-48d5-99ea-91189e3cab89",
-    "user_id": "2758cac4-304a-46d8-941f-ef0277f0056a"
+    "timezone_offset": 0,
+    "language": "pt"
     }}
 
 from langchain_core.messages.base import BaseMessage

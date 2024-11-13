@@ -48,14 +48,15 @@ def find_tasks(
         args={
             "task_name": task_name,
             "task_description": task_description,
-            "task_due_date": task_due_date,
-            ""
+            "task_due_date": task_due_date,            
             "task_status": task_status,
             "task_priority": task_priority,
             "estimate_duration_minutes": estimate_duration_minutes,
             "parent_project_name": parent_project_name,
             "author_user_name": author_user_name,
             "assigned_user_names": assigned_user_names,
+            "task_created_date": task_created_date,
+            "date_search_radius_days": date_search_radius_days,
         }
     )
     return json.dumps(response.to_dict())

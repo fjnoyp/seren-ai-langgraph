@@ -126,10 +126,10 @@ def chatbot(state: AgentState, config: RunnableConfig):
     # Get last 3 messages
     messages: list[BaseMessage] = trim_messages(
         state["messages"],
-        # only use last 4 messages
+        # only use last 6 messages
         strategy="last",
         token_counter=len,
-        max_tokens=4,
+        max_tokens=6,
         # Most chat models expect that chat history starts with either:
         # (1) a HumanMessage or
         # (2) a SystemMessage followed by a HumanMessage
@@ -162,7 +162,7 @@ def chatbot(state: AgentState, config: RunnableConfig):
 
     # Convert offset minutes to UTC timezone
     tz = timezone(timedelta(minutes=timezone_offset_minutes))
-    current_datetime = datetime.now(tz)
+    current_datetime = datetime.now(tz).strftime("%A, %d %B %Y %H:%M:%S")
 
     language = config["configurable"].get("language")
 

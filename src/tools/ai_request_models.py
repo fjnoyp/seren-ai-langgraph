@@ -25,7 +25,11 @@ class AiToolRequestModel:
 
 # === AI asking for action that client can perform === 
 class AiActionRequestType(Enum):
-    TOGGLE_CLOCK_IN_OR_OUT = "toggle_clock_in_or_out"
+    TOGGLE_CLOCK_IN_OR_OUT = "toggle_clock_in_or_out"    
+    CREATE_TASK = "create_task"
+    UPDATE_TASK_FIELDS = "update_task_fields"
+    DELETE_TASK = "delete_task"
+    ASSIGN_USER_TO_TASK = "assign_user_to_task"
 
 class AiActionRequestModel(AiToolRequestModel):
     action_request_type: AiActionRequestType
@@ -47,7 +51,7 @@ class AiActionRequestModel(AiToolRequestModel):
 
 # === AI asking for a UI action === 
 class AiUIActionType(Enum):
-    SHIFTS_PAGE = "shifts_page"
+    SHIFTS_PAGE = "shifts_page"    
 
 class AiUiActionRequestModel(AiToolRequestModel):
     ui_action_type: AiUIActionType
@@ -75,6 +79,7 @@ class AiInfoRequestType(Enum):
     CURRENT_SHIFT = "current_shift"
     SHIFT_ASSIGNMENTS = "shift_assignments"
     SHIFT_LOGS = "shift_logs"
+    FIND_TASKS = "find_tasks"
 
 class AiInfoRequestModel(AiToolRequestModel):
     info_request_type: AiInfoRequestType

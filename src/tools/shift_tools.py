@@ -3,7 +3,7 @@ from langchain_core.tools import tool
 from typing import Annotated
 import json
 
-from src.tools.ai_tool_response_models import AiActionRequestModel, AiActionRequestType, AiInfoRequestModel, AiInfoRequestType
+from src.tools.ai_request_models import AiActionRequestModel, AiActionRequestType, AiInfoRequestModel, AiInfoRequestType
 from src.tools.tool_context_manager import tool_context
 
 # Tools called by AI to interact with a user's shifts 

@@ -1,7 +1,8 @@
 from src.agent_state import AgentState
-from src.agent import graph  # Import the graph object
+from src.agent import graph_builder  # Import the graph object
 from langchain_core.messages import ToolMessage, HumanMessage
 
+from langgraph.checkpoint.memory import MemorySaver
 
 
 # === LangGraphCloud Message Format ===
@@ -15,19 +16,31 @@ example = [{"role": "human", "content": "how are you?"}]
 
 # For now we hardcode the config object used
 # Config is auto updated by the graph
-config = {"configurable": {
-    "user_id": "2758cac4-304a-46d8-941f-ef0277f0056a",
-    "org_id": "a7666926-89b4-48d5-99ea-91189e3cab89",
-    "timezone_offset": 0,
-    "language": "pt"
-    }}
+config = {
+    "configurable": {
+        "user_id": "2758cac4-304a-46d8-941f-ef0277f0056a",
+        "org_id": "a7666926-89b4-48d5-99ea-91189e3cab89",
+        "timezone_offset_minutes": 0,
+        "language": "en",
+        "thread_id": "1",
+    }
+}
 
 from langchain_core.messages.base import BaseMessage
 
 
+# Build the Local Graph
+local_graph = graph_builder.compile(
+    interrupt_before=["execute_ai_request_on_client"],
+    checkpointer=MemorySaver(),
+)
+
+
 # Use for testing to allow insertion of messages into the graph
 def run_ai_with_messages(messages: list[BaseMessage]) -> list[BaseMessage]:
-    events = graph.stream(AgentState(messages=messages), config=config, stream_mode="values")
+    events = local_graph.stream(
+        AgentState(messages=messages, ui_context="current task name = Kill Bats"), config=config, stream_mode="values"
+    )
 
     # Print out current state of graph:
     # snapshot = graph.get_state(config)

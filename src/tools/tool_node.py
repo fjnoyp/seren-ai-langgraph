@@ -5,7 +5,7 @@ from langgraph.prebuilt import ToolNode
 from src.agent_state import AgentState
 
 from src.config_schema import ConfigSchema
-from src.tools import shift_tools
+from src.tools import shift_tools, task_tools
 
 from langchain_community.tools.tavily_search import TavilySearchResults
 
@@ -25,17 +25,18 @@ tavily = TavilySearchResults(max_results=2)
 
 
 def get_all_tools():
-    return [
-        # *task_tools.get_tools(),
+    return [        
         *shift_tools.get_all_tools(),
+        *task_tools.get_tools(),
         # tavily,
     ]
 
 # Tools that route to execute_ai_request_on_client
-# Only for tools that need followup 
+# Only for tools that need followup for the ai to respond again
 def get_ai_request_tools():
     return [
         *shift_tools.get_ai_request_tools(),
+        *task_tools.get_ai_request_tools(),
     ]
 
 # graph_builder.add_node("tools", ToolNode(tools))

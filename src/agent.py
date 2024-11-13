@@ -166,6 +166,9 @@ def chatbot(state: AgentState, config: RunnableConfig):
 
     language = config["configurable"].get("language")
 
+    # Get ui context
+    ui_context = state["ui_context"]
+
     # Add system message to prompt
     messages.insert(
         0,
@@ -173,8 +176,9 @@ def chatbot(state: AgentState, config: RunnableConfig):
             content="""
         Keep answers short as possible. 
         The current date and time is: {}
-        Only respond in language: {}""".format(
-                current_datetime, language
+        Prefer using language: {}
+        Current UI Context: {}""".format(
+                current_datetime, language, ui_context
             )
         ),
     )

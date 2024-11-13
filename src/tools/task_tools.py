@@ -1,38 +1,114 @@
+import json
 from langchain_core.tools import tool
-from typing import Annotated
+from typing import Annotated, Optional
+
+from src.tools.ai_request_models import AiActionRequestModel, AiActionRequestType, AiInfoRequestModel, AiInfoRequestType
 
 # === TASK TOOLS ===
-# Note: llama keeps hallucinating a "brave_search" tool that doesn't exist
 
-# To view the schema: create_task.args_schema.schema()
-@tool(return_direct=True)
-def request_to_create_task(
+@tool
+def create_task(
     task_name: Annotated[str, ""],
-) -> str:
+    task_description: Annotated[str, ""],
+    task_due_date: Annotated[str, "Must be in ISO 8601 format"],    
+    task_priority: Annotated[str, "Must be: veryLow, low, normal, high, veryHigh"],
+    estimate_duration_minutes: Annotated[int, 0],
+) -> str:    
     """Create a task"""
-    return f"Requested to create task: {task_name}"
+    response = AiActionRequestModel(
+        action_request_type=AiActionRequestType.CREATE_TASK,
+        args={
+            "task_name": task_name,
+            "task_description": task_description,
+            "task_due_date": task_due_date,
+            "task_priority": task_priority,
+            "estimate_duration_minutes": estimate_duration_minutes,
+        }
+    )
+    return json.dumps(response.to_dict())
 
 
-@tool
-def find_task(task_name: Annotated[str, ""]) -> str:
-    """Find a task"""
-    return f"Found task: {task_name}"
-
-
-@tool
-def update_task_status(
-    task_name: Annotated[str, ""],
-    task_status: Annotated[str, "Must be: open, in_progress, or closed"],
+@tool 
+def find_tasks(
+    task_name: Annotated[Optional[str], ""] = None,
+    task_description: Annotated[Optional[str], ""] = None,
+    task_due_date: Annotated[Optional[str], "Must be in ISO 8601 format"] = None,
+    task_created_date: Annotated[Optional[str], "Must be in ISO 8601 format"] = None,
+    date_search_radius_days: Annotated[Optional[int], "Day radius from task due date or task_created_date to search for"] = None,
+    task_status: Annotated[Optional[str], "Must be: open, in_progress, or closed"] = None,
+    task_priority: Annotated[Optional[str], "Must be: veryLow, low, normal, high, veryHigh"] = None,    
+    estimate_duration_minutes: Annotated[Optional[int], ""] = None,
+    parent_project_name: Annotated[Optional[str], ""] = None,
+    author_user_name: Annotated[Optional[str], ""] = None,
+    assigned_user_names: Annotated[Optional[list[str]], ""] = None,
 ) -> str:
-    """Update a task status"""
-    return f"Updated task: {task_name} with status: {task_status}"
+    """Find tasks"""
+    response = AiInfoRequestModel(
+        info_request_type=AiInfoRequestType.FIND_TASKS,
+        args={
+            "task_name": task_name,
+            "task_description": task_description,
+            "task_due_date": task_due_date,
+            ""
+            "task_status": task_status,
+            "task_priority": task_priority,
+            "estimate_duration_minutes": estimate_duration_minutes,
+            "parent_project_name": parent_project_name,
+            "author_user_name": author_user_name,
+            "assigned_user_names": assigned_user_names,
+        }
+    )
+    return json.dumps(response.to_dict())
 
+@tool 
+def update_task_fields(
+    task_name: Annotated[str, ""],
+    task_description: Annotated[Optional[str], ""] = None,
+    task_due_date: Annotated[Optional[str], "Must be in ISO 8601 format"] = None,
+    task_status: Annotated[Optional[str], "Must be: open, in_progress, or closed"] = None,
+    task_priority: Annotated[Optional[str], "Must be: veryLow, low, normal, high, veryHigh"] = None,    
+    estimate_duration_minutes: Annotated[Optional[int], ""] = None,
+) -> str:
+    """Update fields of a task"""
+    response = AiActionRequestModel(
+        action_request_type=AiActionRequestType.UPDATE_TASK_FIELDS,
+        args={
+            "task_name": task_name,
+            "task_description": task_description,
+            "task_due_date": task_due_date,
+            "task_status": task_status,
+            "task_priority": task_priority,
+            "estimate_duration_minutes": estimate_duration_minutes,
+        }
+    )
+    return json.dumps(response.to_dict())
 
-@tool(return_direct=True)
-def request_to_delete_task(task_name: Annotated[str, ""]) -> str:
+@tool
+def delete_task(
+    task_name: Annotated[str, ""]
+) -> str:
     """Delete a task"""
-    return f"Requested to delete task: {task_name}"
+    response = AiActionRequestModel(
+        action_request_type=AiActionRequestType.DELETE_TASK,
+        args={"task_name": task_name}
+    )
+    return json.dumps(response.to_dict())
+
+@tool
+def assign_user_to_task(
+    task_name: Annotated[str, ""],
+    user_name: Annotated[str, ""],
+) -> str:
+    """Assign a user to a task"""
+    response = AiActionRequestModel(
+        action_request_type=AiActionRequestType.ASSIGN_USER_TO_TASK,
+        args={"task_name": task_name, "user_name": user_name}
+    )
+    return json.dumps(response.to_dict())
 
 
 def get_tools():
-    return [request_to_create_task, find_task, update_task_status, request_to_delete_task]
+    return [create_task, find_tasks, update_task_fields, delete_task]
+
+def get_ai_request_tools():
+    return [find_tasks]

@@ -9,10 +9,10 @@ from src.tools.ai_request_models import AiActionRequestModel, AiActionRequestTyp
 @tool
 def create_task(
     task_name: Annotated[str, ""],
-    task_description: Annotated[str, ""],
-    task_due_date: Annotated[str, "Must be in ISO 8601 format"],    
-    task_priority: Annotated[str, "Must be: veryLow, low, normal, high, veryHigh"],
-    estimate_duration_minutes: Annotated[int, 0],
+    task_description: Annotated[Optional[str], ""],
+    task_due_date: Annotated[Optional[str], "Must be in ISO 8601 format"],    
+    task_priority: Annotated[Optional[str], "Must be: veryLow, low, normal, high, veryHigh"],
+    estimate_duration_minutes: Annotated[Optional[int], 0],
 ) -> str:    
     """Create a task"""
     response = AiActionRequestModel(
@@ -34,7 +34,7 @@ def find_tasks(
     task_description: Annotated[Optional[str], ""] = None,
     task_due_date: Annotated[Optional[str], "Must be in ISO 8601 format"] = None,
     task_created_date: Annotated[Optional[str], "Must be in ISO 8601 format"] = None,
-    date_search_radius_days: Annotated[Optional[int], "Day radius from task due date or task_created_date to search for"] = None,
+    date_search_radius_days: Annotated[Optional[int], "Set to search X amount of days from the task due date or task created date"] = None,
     task_status: Annotated[Optional[str], "Must be: open, in_progress, or closed"] = None,
     task_priority: Annotated[Optional[str], "Must be: veryLow, low, normal, high, veryHigh"] = None,    
     estimate_duration_minutes: Annotated[Optional[int], ""] = None,

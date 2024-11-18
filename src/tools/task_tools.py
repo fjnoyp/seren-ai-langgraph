@@ -9,10 +9,10 @@ from src.tools.ai_request_models import AiActionRequestModel, AiActionRequestTyp
 @tool
 def create_task(
     task_name: Annotated[str, ""],
-    task_description: Annotated[Optional[str], ""],
-    task_due_date: Annotated[Optional[str], "Must be in ISO 8601 format"],    
-    task_priority: Annotated[Optional[str], "Must be: veryLow, low, normal, high, veryHigh"],
-    estimate_duration_minutes: Annotated[Optional[int], 0],
+    task_description: Annotated[Optional[str], ""] = None,
+    task_due_date: Annotated[Optional[str], "Must be in ISO 8601 format"] = None,    
+    task_priority: Annotated[Optional[str], "Must be: veryLow, low, normal, high, veryHigh"] = None,
+    estimate_duration_minutes: Annotated[Optional[int], 0] = None,
 ) -> str:    
     """Create a task"""
     response = AiActionRequestModel(

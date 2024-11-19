@@ -26,13 +26,17 @@ from src.tools.tool_context_manager import tool_context
 
 @tool 
 def get_shift_assignments(
-    dayOffsetsToGet: Annotated[ list[int], "1 = tomorrow, -1 = yesterday, 7 = next week, etc." ],
+    daysToGet: Annotated[ list[str], "Days to get - DATE_LIST" ], #List of days to get in YYYY/MM/DD format. Use date - date to get between two dates" ],
     show_only: Annotated[bool, "If True, only shows the shift info without further actions"] = False) -> str:     
     """Get shift assignments (times you need to clock in/out of work) for specific days"""
     response = AiInfoRequestModel(
         info_request_type=AiInfoRequestType.SHIFT_ASSIGNMENTS,
         args={
-            "day_offsets_to_get": dayOffsetsToGet,            
+            # TODO - remove - send fields for backwards compatibility
+            "day_offsets_to_get": 0, 
+
+            # TODO - New field to support: 
+            "days_to_get": daysToGet         
         },
         show_only=show_only
     )
@@ -40,14 +44,18 @@ def get_shift_assignments(
 
 @tool
 def get_shift_logs(    
-    dayOffsetsToGet: Annotated[ list[int], "1 = tomorrow, -1 = yesterday, 7 = next week, etc." ],
+    daysToGet: Annotated[ list[str], "Days to get - DATE_LIST" ], #List of days to get in YYYY/MM/DD format. Use date - date to get between two dates" ],
     show_only: Annotated[bool, "If True, only shows the shift info without further actions"] = False
     ) -> str:
     """Get shift logs (times you clocked in/out of work) for specific days"""
     response = AiInfoRequestModel(
         info_request_type=AiInfoRequestType.SHIFT_LOGS,
         args={
-            "day_offsets_to_get": dayOffsetsToGet,            
+            # TODO - remove - send fields for backwards compatibility
+            "day_offsets_to_get": 0, 
+
+            # TODO - New field to support: 
+            "days_to_get": daysToGet         
         },
         show_only=show_only
     )

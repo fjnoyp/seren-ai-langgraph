@@ -32,9 +32,8 @@ def create_task(
 def find_tasks(
     task_name: Annotated[Optional[str], ""] = None,
     task_description: Annotated[Optional[str], ""] = None,
-    task_due_date: Annotated[Optional[str], "Must be in ISO 8601 format"] = None,
-    task_created_date: Annotated[Optional[str], "Must be in ISO 8601 format"] = None,
-    date_search_radius_days: Annotated[Optional[int], "Set to search X amount of days from the task due date or task created date"] = None,
+    task_due_dates_to_get: Annotated[Optional[list[str]], "Due dates of tasks to get - DATE_LIST"] = None,
+    task_created_dates_to_get: Annotated[Optional[list[str]], "Created dates of tasks to get - DATE_LIST"] = None,
     task_status: Annotated[Optional[str], "Must be: open, in_progress, or closed"] = None,
     task_priority: Annotated[Optional[str], "Must be: veryLow, low, normal, high, veryHigh"] = None,    
     estimate_duration_minutes: Annotated[Optional[int], ""] = None,
@@ -48,15 +47,21 @@ def find_tasks(
         args={
             "task_name": task_name,
             "task_description": task_description,
-            "task_due_date": task_due_date,            
+
+            # TODO - remove - send fields for backwards compatibility
+            "task_due_date": None,
+            "task_created_date": None,
+            "date_search_radius_days": None,
+
             "task_status": task_status,
             "task_priority": task_priority,
             "estimate_duration_minutes": estimate_duration_minutes,
             "parent_project_name": parent_project_name,
             "author_user_name": author_user_name,
             "assigned_user_names": assigned_user_names,
-            "task_created_date": task_created_date,
-            "date_search_radius_days": date_search_radius_days,
+
+            "task_due_dates_to_get": task_due_dates_to_get,
+            "task_created_dates_to_get": task_created_dates_to_get,
         }
     )
     return json.dumps(response.to_dict())

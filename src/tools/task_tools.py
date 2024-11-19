@@ -34,8 +34,8 @@ def find_tasks(
     task_description: Annotated[Optional[str], ""] = None,
     task_due_dates_to_get: Annotated[Optional[list[str]], "Due dates of tasks to get - DATE_LIST"] = None,
     task_created_dates_to_get: Annotated[Optional[list[str]], "Created dates of tasks to get - DATE_LIST"] = None,
-    task_status: Annotated[Optional[str], "Must be: open, in_progress, or closed"] = None,
-    task_priority: Annotated[Optional[str], "Must be: veryLow, low, normal, high, veryHigh"] = None,    
+    task_status: Annotated[Optional[str], "Your input must be: open, in_progress, or closed - STRICT_ENUM"] = None,
+    task_priority: Annotated[Optional[str], "Your input must be: veryLow, low, normal, high, veryHigh - STRICT_ENUM"] = None,    
     estimate_duration_minutes: Annotated[Optional[int], ""] = None,
     parent_project_name: Annotated[Optional[str], ""] = None,
     author_user_name: Annotated[Optional[str], ""] = None,
@@ -71,8 +71,8 @@ def update_task_fields(
     task_name: Annotated[str, ""],
     task_description: Annotated[Optional[str], ""] = None,
     task_due_date: Annotated[Optional[str], "Must be in ISO 8601 format"] = None,
-    task_status: Annotated[Optional[str], "Must be: open, in_progress, or closed"] = None,
-    task_priority: Annotated[Optional[str], "Must be: veryLow, low, normal, high, veryHigh"] = None,    
+    task_status: Annotated[Optional[str], "Your input must be: open, in_progress, or closed - STRICT_ENUM"] = None,
+    task_priority: Annotated[Optional[str], "Your input must be: veryLow, low, normal, high, veryHigh - STRICT_ENUM"] = None,    
     estimate_duration_minutes: Annotated[Optional[int], ""] = None,
 ) -> str:
     """Update fields of a task"""

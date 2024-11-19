@@ -175,7 +175,7 @@ def chatbot(state: AgentState, config: RunnableConfig):
         SystemMessage(
             content="""
         Keep answers short as possible. 
-        For tool parameters DATE_LIST, you should provide a List of days to get in YYYY/MM/DD format. Use YYYY/MM/DD - YYYY/MM/DD to get between two dates.
+        For tool parameters DATE_LIST, you should provide a List of days to get in YYYY/MM/DD format.
         For tool parameters STRICT_ENUM, you must only provide a value from the list of options provided. If user gives slightly different input map it to the correct value.
         The current date and time is: {}
         Prefer using language: {}

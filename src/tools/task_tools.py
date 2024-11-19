@@ -40,6 +40,7 @@ def find_tasks(
     parent_project_name: Annotated[Optional[str], ""] = None,
     author_user_name: Annotated[Optional[str], ""] = None,
     assigned_user_names: Annotated[Optional[list[str]], ""] = None,
+    get_overdue_tasks_only: Annotated[Optional[bool], ""] = None,
 ) -> str:
     """Find tasks"""
     response = AiInfoRequestModel(
@@ -62,6 +63,7 @@ def find_tasks(
 
             "task_due_dates_to_get": task_due_dates_to_get,
             "task_created_dates_to_get": task_created_dates_to_get,
+            "get_overdue_tasks_only": get_overdue_tasks_only,
         }
     )
     return json.dumps(response.to_dict())

@@ -96,7 +96,7 @@ graph_builder = StateGraph(AgentState, ConfigSchema)
 # tool-user-preview model overeager tool call
 # https://groq.com/pricing/
 # llm = ChatGroq(model="llama3-groq-8b-8192-tool-use-preview")
-llm = ChatGroq(model="llama3-groq-70b-8192-tool-use-preview")
+llm = ChatGroq(model="llama-3.3-70b-versatile")
 
 # this model is more balanced
 # model still fails at basic tasks - calling tools too aggressively

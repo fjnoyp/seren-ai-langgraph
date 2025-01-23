@@ -39,7 +39,11 @@ local_graph = graph_builder.compile(
 # Use for testing to allow insertion of messages into the graph
 def run_ai_with_messages(messages: list[BaseMessage]) -> list[BaseMessage]:
     events = local_graph.stream(
-        AgentState(messages=messages, ui_context="current task name = Kill Bats"), config=config, stream_mode="values"
+        # Issue - when sending message hi and ui context is provided, ai stupidly calls find task ....
+        # AgentState(messages=messages, ui_context="current task name = Kill Bats"), config=config, stream_mode="values"
+        AgentState(messages=messages, ui_context=""),
+        config=config,
+        stream_mode="values",
     )
 
     # Print out current state of graph:

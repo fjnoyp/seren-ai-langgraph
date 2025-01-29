@@ -20,6 +20,9 @@ def create_task(
     task_priority: Annotated[
         Optional[str], "Must be: veryLow, low, normal, high, veryHigh"
     ] = None,
+    task_status: Annotated[
+        Optional[str], "Must be: open, inProgress, or closed"
+    ] = None,
     estimate_duration_minutes: Annotated[Optional[int], 0] = None,
     assigned_user_names: Annotated[Optional[list[str]], ""] = None,
     parent_project_name: Annotated[Optional[str], ""] = None,
@@ -32,6 +35,7 @@ def create_task(
             "task_description": task_description,
             "task_due_date": task_due_date,
             "task_priority": task_priority,
+            "task_status": task_status,
             "estimate_duration_minutes": estimate_duration_minutes,
             "assigned_user_names": assigned_user_names,
             "parent_project_name": parent_project_name,
@@ -51,11 +55,11 @@ def find_tasks(
         Optional[list[str]], "Created dates of tasks to get - DATE_LIST"
     ] = None,
     task_status: Annotated[
-        Optional[str], "Your input must be: open, in_progress, or closed - STRICT_ENUM"
+        Optional[str], "Must be: open, inProgress, or closed - STRICT_ENUM"
     ] = None,
     task_priority: Annotated[
         Optional[str],
-        "Your input must be: veryLow, low, normal, high, veryHigh - STRICT_ENUM",
+        "Must be: veryLow, low, normal, high, veryHigh - STRICT_ENUM",
     ] = None,
     estimate_duration_minutes: Annotated[Optional[int], ""] = None,
     parent_project_name: Annotated[Optional[str], ""] = None,
@@ -93,11 +97,11 @@ def update_task_fields(
     task_description: Annotated[Optional[str], ""] = None,
     task_due_date: Annotated[Optional[str], "Must be in ISO 8601 format"] = None,
     task_status: Annotated[
-        Optional[str], "Your input must be: open, in_progress, or closed - STRICT_ENUM"
+        Optional[str], "Must be: open, inProgress, or closed - STRICT_ENUM"
     ] = None,
     task_priority: Annotated[
         Optional[str],
-        "Your input must be: veryLow, low, normal, high, veryHigh - STRICT_ENUM",
+        "Must be: veryLow, low, normal, high, veryHigh - STRICT_ENUM",
     ] = None,
     estimate_duration_minutes: Annotated[Optional[int], ""] = None,
     assigned_user_names: Annotated[Optional[list[str]], ""] = None,

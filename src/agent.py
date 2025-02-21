@@ -98,6 +98,8 @@ graph_builder = StateGraph(AgentState, ConfigSchema)
 # llm = ChatGroq(model="llama3-groq-8b-8192-tool-use-preview")
 llm = ChatGroq(model="llama-3.3-70b-versatile")
 
+single_call_llm = ChatGroq(model="llama-3.1-8b-instant")
+
 # this model is more balanced
 # model still fails at basic tasks - calling tools too aggressively
 # llm = ChatGroq(model="llama-3.1-8b-instant")
@@ -117,7 +119,7 @@ def edge_route_by_ai_behavior_mode(state: AgentState):
 
 
 def node_single_call(state: AgentState, config: RunnableConfig):
-    response = llm.invoke(state["messages"])
+    response = single_call_llm.invoke(state["messages"])
     return {"messages": [response]}
 
 

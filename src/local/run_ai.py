@@ -1,4 +1,4 @@
-from src.agent_state import AgentState
+from src.agent_state import AgentState, AiBehaviorMode
 from src.agent import graph_builder  # Import the graph object
 from langchain_core.messages import ToolMessage, HumanMessage
 
@@ -41,7 +41,11 @@ def run_ai_with_messages(messages: list[BaseMessage]) -> list[BaseMessage]:
     events = local_graph.stream(
         # Issue - when sending message hi and ui context is provided, ai stupidly calls find task ....
         # AgentState(messages=messages, ui_context="current task name = Kill Bats"), config=config, stream_mode="values"
-        AgentState(messages=messages, ui_context=""),
+        AgentState(
+            messages=messages,
+            ui_context="",
+            ai_behavior_mode=AiBehaviorMode.SINGLE_CALL.value,
+        ),
         config=config,
         stream_mode="values",
     )

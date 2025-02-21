@@ -105,6 +105,7 @@ def update_task_fields(
     ] = None,
     estimate_duration_minutes: Annotated[Optional[int], ""] = None,
     assigned_user_names: Annotated[Optional[list[str]], ""] = None,
+    parent_project_name: Annotated[Optional[str], ""] = None,
 ) -> str:
     """Update fields of a task"""
     response = AiActionRequestModel(
@@ -117,6 +118,7 @@ def update_task_fields(
             "task_priority": task_priority,
             "estimate_duration_minutes": estimate_duration_minutes,
             "assigned_user_names": assigned_user_names,
+            "parent_project_name": parent_project_name,
         },
     )
     return json.dumps(response.to_dict())

@@ -41,7 +41,7 @@ from langchain_core.runnables.config import RunnableConfig
 
 from pydantic import BaseModel, Field
 
-from src.agent_state import AgentState
+from src.agent_state import AgentState, AiBehaviorMode
 
 from src.config_schema import ConfigSchema
 from src.tools.tool_node import get_ai_request_tools, tool_node, get_all_tools
@@ -109,7 +109,19 @@ llm = ChatGroq(model="llama-3.3-70b-versatile")
 llm_with_tools = llm.bind_tools(get_all_tools(), parallel_tool_calls=False)
 
 
-def chatbot(state: AgentState, config: RunnableConfig):
+def edge_route_by_ai_behavior_mode(state: AgentState):
+    ai_behavior_mode = state["ai_behavior_mode"]
+    if ai_behavior_mode is None or ai_behavior_mode == "":
+        return AiBehaviorMode.CHAT
+    return ai_behavior_mode
+
+
+def node_single_call(state: AgentState, config: RunnableConfig):
+    response = llm.invoke(state["messages"])
+    return {"messages": [response]}
+
+
+def node_chatbot(state: AgentState, config: RunnableConfig):
 
     # user_id = config["configurable"].get("user_id")
     # org_id = config["configurable"].get("org_id")
@@ -146,13 +158,14 @@ def chatbot(state: AgentState, config: RunnableConfig):
 
     # First check that config vars are present
     if (
-        config["configurable"].get("timezone_offset_minutes") is None
-        or config["configurable"].get("language") is None
+        config["configurable"].get("timezone_offset_minutes")
+        is None
+        # or config["configurable"].get("language") is None
     ):
         return {
             "messages": [
                 AIMessage(
-                    content="Warning - No timezone_offset_minutes or language found in assistant config"
+                    content="Warning - No timezone_offset_minutes found in assistant config"
                 )
             ]
         }
@@ -190,7 +203,7 @@ def chatbot(state: AgentState, config: RunnableConfig):
 
 
 # TODO work on tool execution conditional branching
-def check_ai_request(state: AgentState):
+def edge_check_ai_request(state: AgentState):
     messages = state["messages"]
     last_message = messages[-1]
 
@@ -204,7 +217,7 @@ def check_ai_request(state: AgentState):
 
 # TODO : rename from show only and continue execution
 # Determine how ai will either continue execcution or end here ...
-def check_ai_result(state: AgentState):
+def edge_check_ai_result(state: AgentState):
     messages = state["messages"]
     last_message = messages[-1]
 
@@ -217,11 +230,19 @@ def check_ai_result(state: AgentState):
 # Fake node to ask client
 # I think - because we interrupt here - it allows us to resume ai execution
 # By passing in empty message, otherwise nothing would happen
-def execute_ai_request_on_client(state: AgentState):
+def node_execute_ai_request_on_client(state: AgentState):
     pass
 
 
-graph_builder.add_node("chatbot", chatbot)
+graph_builder.add_conditional_edges(
+    START,
+    edge_route_by_ai_behavior_mode,
+    {"chat": "chatbot", "single_call": "single_call"},
+)
+
+graph_builder.add_node("chatbot", node_chatbot)
+
+graph_builder.add_node("single_call", node_single_call)
 
 
 graph_builder.add_conditional_edges(
@@ -232,22 +253,21 @@ graph_builder.add_node("tools", tool_node)
 
 graph_builder.add_conditional_edges(
     "tools",
-    check_ai_request,
+    edge_check_ai_request,
     {"execute_ai_request_on_client": "execute_ai_request_on_client", END: END},
 )
 
 graph_builder.add_edge("tools", END)
 
-graph_builder.add_node("execute_ai_request_on_client", execute_ai_request_on_client)
+graph_builder.add_node(
+    "execute_ai_request_on_client", node_execute_ai_request_on_client
+)
 
 graph_builder.add_conditional_edges(
     "execute_ai_request_on_client",
-    check_ai_result,
+    edge_check_ai_result,
     {"run_with_result": "chatbot", END: END},
 )
-
-# graph_builder.set_entry_point("chatbot")
-graph_builder.add_edge(START, "chatbot")
 
 
 graph_builder.add_edge("chatbot", END)

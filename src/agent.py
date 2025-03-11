@@ -95,8 +95,8 @@ graph_builder = StateGraph(AgentState, ConfigSchema)
 
 # tool-user-preview model overeager tool call
 # https://groq.com/pricing/
-# llm = ChatGroq(model="llama3-groq-8b-8192-tool-use-preview")
 llm = ChatGroq(model="llama-3.3-70b-versatile")
+# llm = ChatGroq(model="qwen-2.5-coder-32b")
 
 single_call_llm = ChatGroq(model="llama-3.1-8b-instant")
 
@@ -112,9 +112,9 @@ llm_with_tools = llm.bind_tools(get_all_tools(), parallel_tool_calls=False)
 
 
 def edge_route_by_ai_behavior_mode(state: AgentState):
-    ai_behavior_mode = state["ai_behavior_mode"]
+    ai_behavior_mode = state.get("ai_behavior_mode")
     if ai_behavior_mode is None or ai_behavior_mode == "":
-        return AiBehaviorMode.CHAT
+        return AiBehaviorMode.CHAT.value
     return ai_behavior_mode
 
 
@@ -140,10 +140,10 @@ def node_chatbot(state: AgentState, config: RunnableConfig):
     # Get last 3 messages
     messages: list[BaseMessage] = trim_messages(
         state["messages"],
-        # only use last 6 messages
+        # only use last 7 messages
         strategy="last",
         token_counter=len,
-        max_tokens=6,
+        max_tokens=7,
         # Most chat models expect that chat history starts with either:
         # (1) a HumanMessage or
         # (2) a SystemMessage followed by a HumanMessage
@@ -182,14 +182,15 @@ def node_chatbot(state: AgentState, config: RunnableConfig):
     language = config["configurable"].get("language")
 
     # Get ui context
-    ui_context = state["ui_context"]
+    ui_context = state.get("ui_context", "")
 
     # Add system message to prompt
     messages.insert(
         0,
         SystemMessage(
             content="""
-        Keep answers short as possible. 
+        Keep answers short as possible. Do not call tools unless necessary. 
+        IMPORTANT: Always use structured tool calls when using tools. Never describe tool calls in your message text.
         For tool parameters DATE_LIST, you should provide a List of days to get in YYYY/MM/DD format.
         For tool parameters STRICT_ENUM, you must only provide a value from the list of options provided. If user gives slightly different input map it to the correct value.
         The current date and time is: {}
@@ -201,6 +202,35 @@ def node_chatbot(state: AgentState, config: RunnableConfig):
     )
 
     response = llm_with_tools.invoke(messages)
+
+    # Check if the response contains a JSON tool call in the content
+    if isinstance(response, AIMessage) and not response.tool_calls:
+        content = response.content.strip()
+        # Check if content looks like a JSON object with "name" field
+        if content.startswith("{") and "name" in content:
+            try:
+                import json
+
+                # Try to parse the JSON
+                tool_data = json.loads(content)
+
+                if "name" in tool_data and "arguments" in tool_data:
+                    # Create a proper tool call object
+                    from langchain_core.messages.tool import ToolCall
+
+                    tool_call = ToolCall(
+                        name=tool_data["name"], args=tool_data["arguments"]
+                    )
+
+                    # Create a new AIMessage with proper tool_calls structure
+                    response = AIMessage(
+                        content="",  # Empty content since we're using tool_calls
+                        tool_calls=[tool_call],
+                    )
+            except json.JSONDecodeError:
+                # If it's not valid JSON, leave response as is
+                pass
+
     return {"messages": [response]}
 
 
@@ -209,24 +239,29 @@ def edge_check_ai_request(state: AgentState):
     messages = state["messages"]
     last_message = messages[-1]
 
-    if not isinstance(last_message, ToolMessage):
-        return END
-    elif last_message.name in get_ai_request_tools():
+    # if not isinstance(last_message, ToolMessage):
+    #     return END
+    # elif last_message.name in get_ai_request_tools():
+    #     return "execute_ai_request_on_client"
+    # else:
+    #     return END
+
+    if last_message.name in get_ai_request_tools():
         return "execute_ai_request_on_client"
     else:
-        return END
+        return "chatbot"
 
 
 # TODO : rename from show only and continue execution
 # Determine how ai will either continue execcution or end here ...
-def edge_check_ai_result(state: AgentState):
-    messages = state["messages"]
-    last_message = messages[-1]
+# def edge_check_ai_result(state: AgentState):
+#     messages = state["messages"]
+#     last_message = messages[-1]
 
-    if not isinstance(last_message, ToolMessage):
-        return END
-    else:
-        return "run_with_result"
+#     if not isinstance(last_message, ToolMessage):
+#         return END
+#     else:
+#         return "run_with_result"
 
 
 # Fake node to ask client
@@ -253,26 +288,35 @@ graph_builder.add_conditional_edges(
 
 graph_builder.add_node("tools", tool_node)
 
-graph_builder.add_conditional_edges(
-    "tools",
-    edge_check_ai_request,
-    {"execute_ai_request_on_client": "execute_ai_request_on_client", END: END},
-)
+# graph_builder.add_conditional_edges(
+#     "tools",
+#     edge_check_ai_request,
+#     {
+#         "execute_ai_request_on_client": "execute_ai_request_on_client",
+#         "chatbot": "chatbot",
+#     },
+# )
 
-graph_builder.add_edge("tools", END)
+graph_builder.add_edge("tools", "execute_ai_request_on_client")
+
+# graph_builder.add_edge("tools", END)
+# graph_builder.add_edge("tools", "chatbot")
 
 graph_builder.add_node(
     "execute_ai_request_on_client", node_execute_ai_request_on_client
 )
 
-graph_builder.add_conditional_edges(
-    "execute_ai_request_on_client",
-    edge_check_ai_result,
-    {"run_with_result": "chatbot", END: END},
-)
+# graph_builder.add_conditional_edges(
+#     "execute_ai_request_on_client",
+#     edge_check_ai_result,
+#     {"run_with_result": "chatbot", END: END},
+# )
+
+graph_builder.add_edge("execute_ai_request_on_client", "chatbot")
 
 
 graph_builder.add_edge("chatbot", END)
+graph_builder.add_edge("single_call", END)
 
 # === Compile Graph ===
 # No memory is needed for cloud

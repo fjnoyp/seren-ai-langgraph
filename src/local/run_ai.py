@@ -43,8 +43,8 @@ def run_ai_with_messages(messages: list[BaseMessage]) -> list[BaseMessage]:
         # AgentState(messages=messages, ui_context="current task name = Kill Bats"), config=config, stream_mode="values"
         AgentState(
             messages=messages,
-            ui_context="",
-            ai_behavior_mode=AiBehaviorMode.SINGLE_CALL.value,
+            # ui_context="",
+            # ai_behavior_mode=AiBehaviorMode.CHAT.value,
         ),
         config=config,
         stream_mode="values",

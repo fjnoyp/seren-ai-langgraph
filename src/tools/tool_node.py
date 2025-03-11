@@ -25,30 +25,32 @@ tavily = TavilySearchResults(max_results=2)
 
 
 def get_all_tools():
-    return [        
+    return [
         *shift_tools.get_all_tools(),
         *task_tools.get_tools(),
         # tavily,
     ]
 
+
 # Tools that route to execute_ai_request_on_client
-# Only for tools that need followup for the ai to respond again
+# Only for tools that need followup UI execution (Mar 10 25 - we are disabling showOnly ..) the ai to respond again
 def get_ai_request_tools():
     return [
         *shift_tools.get_ai_request_tools(),
         *task_tools.get_ai_request_tools(),
     ]
 
+
 # graph_builder.add_node("tools", ToolNode(tools))
 
 
 def tool_node(state: AgentState, config: RunnableConfig):
-        
-    # Providing context allows tools to be auto called with certain parameter values 
-    
+
+    # Providing context allows tools to be auto called with certain parameter values
+
     # user_id = config["configurable"].get("user_id")
     # org_id = config["configurable"].get("org_id")
 
     # Set the tool context with user and org information (UNUSED FOR NOW - as ai makes requests to client directly instead)
-    #with set_tool_context({"timezone": timezone, "language": language}):
-        return ToolNode(get_all_tools()).invoke(state) #, config)
+    # with set_tool_context({"timezone": timezone, "language": language}):
+    return ToolNode(get_all_tools()).invoke(state)  # , config)

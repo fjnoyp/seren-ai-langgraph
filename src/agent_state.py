@@ -16,7 +16,6 @@ class AiBehaviorMode(Enum):
 
 class AgentState(TypedDict):
     messages: Annotated[list, add_messages]
-    ui_context: Annotated[str, ""]
-    ai_behavior_mode: Annotated[
-        str, ""
-    ]  # Can't seem to set default values here ... value must be sent ...
+    ui_context: str
+    ai_behavior_mode: str
+    plan: str

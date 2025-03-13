@@ -153,4 +153,4 @@ def get_tools():
 
 
 def get_ai_request_tools():
-    return [find_tasks]
+    return [create_task, find_tasks, update_task_fields, delete_task]

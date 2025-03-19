@@ -28,7 +28,7 @@ def node_tool_caller(state: AgentState, config: RunnableConfig):
 
     # Create system message for tool execution
     system_content = f"""
-    You MUST respond with a tool call. 
+    You MUST respond with a proper tool call.
 
     Call a tool based on: 
     {prev_node_feedback}
@@ -41,9 +41,14 @@ def node_tool_caller(state: AgentState, config: RunnableConfig):
     - Use ONLY structured tool calls
     - Include ONLY the tool call without additional explanation
 
-    Prefer using the same language as the user's query
+    Prefer using the same language as the user's query. 
+
+    All dates should be in ISO 8601 format.
+
+    If user refers to self, use keyword MYSELF in the assigned_user_names call.     
     
     The current date and time is: {current_datetime}    
+
     Current UI Context: {ui_context}
     """
 

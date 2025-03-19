@@ -16,7 +16,8 @@ from src.tools.ai_request_models import (
 def create_task(
     task_name: Annotated[str, ""],
     task_description: Annotated[Optional[str], ""] = None,
-    task_due_date: Annotated[Optional[str], "Must be in ISO 8601 format"] = None,
+    task_start_date: Annotated[Optional[str], ""] = None,
+    task_due_date: Annotated[Optional[str], ""] = None,
     task_priority: Annotated[
         Optional[str], "Must be: veryLow, low, normal, high, veryHigh"
     ] = None,
@@ -33,6 +34,7 @@ def create_task(
         args={
             "task_name": task_name,
             "task_description": task_description,
+            "task_start_date": task_start_date,
             "task_due_date": task_due_date,
             "task_priority": task_priority,
             "task_status": task_status,
@@ -45,14 +47,30 @@ def create_task(
 
 
 @tool
+def add_comment_to_task(
+    task_name: Annotated[str, ""],
+    comment: Annotated[str, ""],
+) -> str:
+    """Add a comment to a task"""
+    response = AiActionRequestModel(
+        action_request_type=AiActionRequestType.ADD_COMMENT_TO_TASK,
+        args={
+            "task_name": task_name,
+            "comment": comment,
+        },
+    )
+    return json.dumps(response.to_dict())
+
+
+@tool
 def find_tasks(
     task_name: Annotated[Optional[str], ""] = None,
     task_description: Annotated[Optional[str], ""] = None,
     task_due_dates_to_get: Annotated[
-        Optional[list[str]], "Due dates of tasks to get - DATE_LIST"
+        Optional[list[str]], "Due dates of tasks to get"
     ] = None,
     task_created_dates_to_get: Annotated[
-        Optional[list[str]], "Created dates of tasks to get - DATE_LIST"
+        Optional[list[str]], "Created dates of tasks to get"
     ] = None,
     task_status: Annotated[
         Optional[str], "Must be: open, inProgress, or closed - STRICT_ENUM"
@@ -95,7 +113,8 @@ def find_tasks(
 def update_task_fields(
     task_name: Annotated[str, ""],
     task_description: Annotated[Optional[str], ""] = None,
-    task_due_date: Annotated[Optional[str], "Must be in ISO 8601 format"] = None,
+    task_start_date: Annotated[Optional[str], ""] = None,
+    task_due_date: Annotated[Optional[str], ""] = None,
     task_status: Annotated[
         Optional[str], "Must be: open, inProgress, or closed - STRICT_ENUM"
     ] = None,
@@ -114,6 +133,7 @@ def update_task_fields(
             "task_name": task_name,
             "task_description": task_description,
             "task_due_date": task_due_date,
+            "task_start_date": task_start_date,
             "task_status": task_status,
             "task_priority": task_priority,
             "estimate_duration_minutes": estimate_duration_minutes,
@@ -149,8 +169,20 @@ def delete_task(task_name: Annotated[str, ""]) -> str:
 
 
 def get_tools():
-    return [create_task, find_tasks, update_task_fields, delete_task]
+    return [
+        create_task,
+        find_tasks,
+        update_task_fields,
+        delete_task,
+        add_comment_to_task,
+    ]
 
 
 def get_ai_request_tools():
-    return [create_task, find_tasks, update_task_fields, delete_task]
+    return [
+        create_task,
+        find_tasks,
+        update_task_fields,
+        delete_task,
+        add_comment_to_task,
+    ]

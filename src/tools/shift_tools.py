@@ -32,7 +32,7 @@ from src.tools.tool_context_manager import tool_context
 @tool
 def get_shift_assignments(
     daysToGet: Annotated[
-        list[str], "Days to get - DATE_LIST"
+        list[str], ""
     ],  # List of days to get in YYYY/MM/DD format. Use date - date to get between two dates" ],
     show_only: Annotated[
         bool, "If True, only shows the shift info without further actions"
@@ -55,7 +55,7 @@ def get_shift_assignments(
 @tool
 def get_shift_logs(
     daysToGet: Annotated[
-        list[str], "Days to get - DATE_LIST"
+        list[str], ""
     ],  # List of days to get in YYYY/MM/DD format. Use date - date to get between two dates" ],
     show_only: Annotated[
         bool, "If True, only shows the shift info without further actions"
@@ -96,7 +96,7 @@ def get_ai_request_tools():
 def get_current_shift_info(
     show_only: Annotated[
         bool, "If True, only shows the shift info without further actions"
-    ] = False
+    ] = False,
 ) -> str:
     """Gets information about the current shift."""
     response = AiInfoRequestModel(

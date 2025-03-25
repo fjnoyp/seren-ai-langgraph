@@ -66,12 +66,24 @@ def add_comment_to_task(
 def find_tasks(
     task_name: Annotated[Optional[str], ""] = None,
     task_description: Annotated[Optional[str], ""] = None,
-    task_due_dates_to_get: Annotated[
-        Optional[list[str]], "Due dates of tasks to get"
+    task_due_date_start: Annotated[
+        Optional[str], "Get all tasks due after this date"
     ] = None,
-    task_created_dates_to_get: Annotated[
-        Optional[list[str]], "Created dates of tasks to get"
+    task_due_date_end: Annotated[
+        Optional[str], "Get all tasks due before this date"
     ] = None,
+    task_created_date_start: Annotated[
+        Optional[str], "Get all tasks created after this date"
+    ] = None,
+    task_created_date_end: Annotated[
+        Optional[str], "Get all tasks created before this date"
+    ] = None,
+    # task_due_dates_to_get: Annotated[
+    #     Optional[list[str]], "Due dates of tasks to get"
+    # ] = None,
+    # task_created_dates_to_get: Annotated[
+    #     Optional[list[str]], "Created dates of tasks to get"
+    # ] = None,
     task_status: Annotated[
         Optional[str], "Must be: open, inProgress, or closed - STRICT_ENUM"
     ] = None,
@@ -83,7 +95,7 @@ def find_tasks(
     parent_project_name: Annotated[Optional[str], ""] = None,
     author_user_name: Annotated[Optional[str], ""] = None,
     assigned_user_names: Annotated[Optional[list[str]], ""] = None,
-    get_overdue_tasks_only: Annotated[Optional[bool], ""] = None,
+    # get_overdue_tasks_only: Annotated[Optional[bool], ""] = None,
 ) -> str:
     """Find tasks"""
     response = AiInfoRequestModel(
@@ -101,9 +113,13 @@ def find_tasks(
             "parent_project_name": parent_project_name,
             "author_user_name": author_user_name,
             "assigned_user_names": assigned_user_names,
-            "task_due_dates_to_get": task_due_dates_to_get,
-            "task_created_dates_to_get": task_created_dates_to_get,
-            "get_overdue_tasks_only": get_overdue_tasks_only,
+            # "task_due_dates_to_get": task_due_dates_to_get,
+            # "task_created_dates_to_get": task_created_dates_to_get,
+            "task_due_date_start": task_due_date_start,
+            "task_due_date_end": task_due_date_end,
+            "task_created_date_start": task_created_date_start,
+            "task_created_date_end": task_created_date_end,
+            # "get_overdue_tasks_only": get_overdue_tasks_only,
         },
     )
     return json.dumps(response.to_dict())

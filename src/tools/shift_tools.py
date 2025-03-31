@@ -37,6 +37,10 @@ def get_shift_assignments(
     show_only: Annotated[
         bool, "If True, only shows the shift info without further actions"
     ] = False,
+    show_to_user: Annotated[
+        bool,
+        "Controls UI visibility",
+    ] = True,
 ) -> str:
     """Get shift assignments (times you need to clock in/out of work) for specific days"""
     response = AiInfoRequestModel(
@@ -48,6 +52,7 @@ def get_shift_assignments(
             "days_to_get": daysToGet,
         },
         show_only=show_only,
+        show_to_user=show_to_user,
     )
     return json.dumps(response.to_dict())
 
@@ -60,6 +65,10 @@ def get_shift_logs(
     show_only: Annotated[
         bool, "If True, only shows the shift info without further actions"
     ] = False,
+    show_to_user: Annotated[
+        bool,
+        "Controls UI visibility",
+    ] = True,
 ) -> str:
     """Get shift logs (times you clocked in/out of work) for specific days"""
     response = AiInfoRequestModel(
@@ -71,6 +80,7 @@ def get_shift_logs(
             "days_to_get": daysToGet,
         },
         show_only=show_only,
+        show_to_user=show_to_user,
     )
     return json.dumps(response.to_dict())
 
@@ -97,9 +107,15 @@ def get_current_shift_info(
     show_only: Annotated[
         bool, "If True, only shows the shift info without further actions"
     ] = False,
+    show_to_user: Annotated[
+        bool,
+        "Controls UI visibility",
+    ] = True,
 ) -> str:
     """Gets information about the current shift."""
     response = AiInfoRequestModel(
-        info_request_type=AiInfoRequestType.CURRENT_SHIFT, show_only=show_only
+        info_request_type=AiInfoRequestType.CURRENT_SHIFT,
+        show_only=show_only,
+        show_to_user=show_to_user,
     )
     return json.dumps(response.to_dict())

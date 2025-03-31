@@ -31,7 +31,7 @@ from langchain_core.messages.base import BaseMessage
 
 # Build the Local Graph
 local_graph = graph_builder.compile(
-    interrupt_before=["execute_ai_request_on_client"],
+    # interrupt_before=["execute_ai_request_on_client"],
     checkpointer=MemorySaver(),
 )
 

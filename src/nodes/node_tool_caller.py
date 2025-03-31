@@ -32,7 +32,7 @@ def node_tool_caller(state: AgentState, config: RunnableConfig):
 
     Call a tool based on: 
     {prev_node_feedback}
-    
+
     PLAN CONTEXT:
     {plan}
 
@@ -83,11 +83,11 @@ def node_tool_caller(state: AgentState, config: RunnableConfig):
         else:
             # No tool call made
             return Command(
-                goto="planner",
+                goto="tools",
                 update={
-                    "prev_node_feedback": f"ERROR: AI did not generate a proper tool call and instead wrote: {response}",
+                    "prev_node_feedback": f"ERROR: You must call a tool in the tool_calls output and not respond via content! Please try again: {prev_node_feedback}",
                     "iteration_count": state.get("iteration_count", 0) + 1,
-                    "next_node": "",
+                    "next_node": "tool_caller",
                 },
             )
     except Exception as e:

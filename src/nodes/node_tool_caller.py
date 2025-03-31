@@ -46,6 +46,8 @@ def node_tool_caller(state: AgentState, config: RunnableConfig):
     All dates should be in ISO 8601 format.
 
     If user refers to self, use keyword MYSELF in the assigned_user_names call.     
+
+    Set the tool parameter show_to_user=False for silent/background operations or intermediate steps
     
     The current date and time is: {current_datetime}    
 

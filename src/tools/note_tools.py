@@ -23,12 +23,18 @@ from src.llm_config import single_call_llm, llm
 
 @tool
 def create_note(
-    note_name: Annotated[str, ""], note_description: Annotated[str, ""]
+    note_name: Annotated[str, ""],
+    note_description: Annotated[str, ""],
+    show_to_user: Annotated[
+        Optional[bool],
+        "Controls UI visibility",
+    ] = True,
 ) -> str:
     """Create a note"""
     response = AiActionRequestModel(
         action_request_type=AiActionRequestType.CREATE_NOTE,
         args={"note_name": note_name, "note_description": note_description},
+        show_to_user=show_to_user,
     )
     return json.dumps(response.to_dict())
 
@@ -50,6 +56,10 @@ async def update_note_description(
         str,
         "A description of the desired changes to the note description to be executed by another AI step",
     ] = None,
+    show_to_user: Annotated[
+        Optional[bool],
+        "Controls UI visibility",
+    ] = True,
 ) -> str:
     """Update the description of a note"""
 
@@ -103,6 +113,7 @@ async def update_note_description(
             "note_name": note_name,
             "updated_note_description": edit_operations_json,
         },
+        show_to_user=show_to_user,
     )
     return json.dumps(response.to_dict())
 
@@ -114,6 +125,10 @@ def find_notes(
     note_created_date_end: Annotated[Optional[str], ""] = None,
     note_updated_date_start: Annotated[Optional[str], ""] = None,
     note_updated_date_end: Annotated[Optional[str], ""] = None,
+    show_to_user: Annotated[
+        Optional[bool],
+        "Controls UI visibility",
+    ] = True,
 ) -> str:
     """Find note(s)"""
     response = AiInfoRequestModel(
@@ -125,6 +140,7 @@ def find_notes(
             "note_updated_date_start": note_updated_date_start,
             "note_updated_date_end": note_updated_date_end,
         },
+        show_to_user=show_to_user,
     )
     return json.dumps(response.to_dict())
 

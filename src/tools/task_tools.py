@@ -27,6 +27,10 @@ def create_task(
     estimate_duration_minutes: Annotated[Optional[int], 0] = None,
     assigned_user_names: Annotated[Optional[list[str]], ""] = None,
     parent_project_name: Annotated[Optional[str], ""] = None,
+    show_to_user: Annotated[
+        Optional[bool],
+        "Controls UI visibility",
+    ] = True,
 ) -> str:
     """Create a task"""
     response = AiActionRequestModel(
@@ -42,6 +46,7 @@ def create_task(
             "assigned_user_names": assigned_user_names,
             "parent_project_name": parent_project_name,
         },
+        show_to_user=show_to_user,
     )
     return json.dumps(response.to_dict())
 
@@ -51,6 +56,10 @@ def add_comment_to_task(
     task_id: Annotated[str, ""],
     task_name: Annotated[str, ""],
     comment: Annotated[str, ""],
+    show_to_user: Annotated[
+        Optional[bool],
+        "Controls UI visibility",
+    ] = True,
 ) -> str:
     """Add a comment to a task"""
     response = AiActionRequestModel(
@@ -60,6 +69,7 @@ def add_comment_to_task(
             "task_name": task_name,
             "comment": comment,
         },
+        show_to_user=show_to_user,
     )
     return json.dumps(response.to_dict())
 
@@ -144,6 +154,10 @@ def find_tasks(
     author_user_name: Annotated[Optional[str], ""] = None,
     assigned_user_names: Annotated[Optional[list[str]], ""] = None,
     # get_overdue_tasks_only: Annotated[Optional[bool], ""] = None,
+    show_to_user: Annotated[
+        Optional[bool],
+        "Controls UI visibility",
+    ] = True,
 ) -> str:
     """Find several tasks based on several search criteria"""
     response = AiInfoRequestModel(
@@ -171,6 +185,7 @@ def find_tasks(
             "task_updated_date_end": task_updated_date_end,
             # "get_overdue_tasks_only": get_overdue_tasks_only,
         },
+        show_to_user=show_to_user,
     )
     return json.dumps(response.to_dict())
 
@@ -192,6 +207,10 @@ def update_task_fields(
     estimate_duration_minutes: Annotated[Optional[int], ""] = None,
     assigned_user_names: Annotated[Optional[list[str]], ""] = None,
     parent_project_name: Annotated[Optional[str], ""] = None,
+    show_to_user: Annotated[
+        Optional[bool],
+        "Controls UI visibility",
+    ] = True,
 ) -> str:
     """Update fields of a task"""
     response = AiActionRequestModel(
@@ -208,6 +227,7 @@ def update_task_fields(
             "assigned_user_names": assigned_user_names,
             "parent_project_name": parent_project_name,
         },
+        show_to_user=show_to_user,
     )
     return json.dumps(response.to_dict())
 

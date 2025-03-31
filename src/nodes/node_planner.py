@@ -96,11 +96,19 @@ def node_planner(state: AgentState, config):
     1. UPDATE the current plan based on the conversation and any feedback
     2. DECIDE which ai should run next, and provide detailed instructions to them what to do. 
 
-    For next_node, you MUST ONLY use one of these exact values:
-    - "tool_caller" - when a tool needs to be called
-    - "response_generator" - when a response should be generated for the user
+    IMPORTANT ROUTING RULES:
+    - ALWAYS use "tool_caller" when information needs to be fetched or actions need to be performed
+    - Only use "response_generator" when ALL necessary information has been gathered and NO MORE TOOLS are needed
+    - If a task needs to be viewed, created, updated, or deleted, ALWAYS call the appropriate tool first
 
-    
+    For next_node, you MUST ONLY use one of these exact values:
+    - "tool_caller" - when a tool needs to be called (REQUIRED for any data operations)
+    - "response_generator" - ONLY when all needed information has been gathered and we're ready for final response
+
+    Example:
+    - For "show task details" -> Use tool_caller first to fetch the task data
+    - For "create task" -> Use tool_caller to create the task
+    - Only use response_generator after tools have completed their work
     """
 
     # Add system message

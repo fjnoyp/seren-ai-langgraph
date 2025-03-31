@@ -48,6 +48,7 @@ def create_task(
 
 @tool
 def add_comment_to_task(
+    task_id: Annotated[str, ""],
     task_name: Annotated[str, ""],
     comment: Annotated[str, ""],
 ) -> str:
@@ -55,8 +56,49 @@ def add_comment_to_task(
     response = AiActionRequestModel(
         action_request_type=AiActionRequestType.ADD_COMMENT_TO_TASK,
         args={
+            "task_id": task_id,
             "task_name": task_name,
             "comment": comment,
+        },
+    )
+    return json.dumps(response.to_dict())
+
+
+# @tool
+# def show_task(task_name: Annotated[str, ""]):
+#     """Show a specific task to the user"""
+#     response = AiActionRequestModel(
+#         action_request_type=AiActionRequestType.SHOW_TASK,
+#         args={"task_name": task_name},
+#     )
+#     return json.dumps(response.to_dict())
+
+
+@tool
+def show_tasks(
+    task_type: Annotated[
+        str,
+        "Must be: singleTask, recentTasks, myTasks, projectGanttTasks, projectTasks - STRICT_ENUM",
+    ],
+    task_id: Annotated[
+        Optional[str], "Must be provided if task_type is singleTask"
+    ] = None,
+    task_name: Annotated[
+        Optional[str], "Must be provided if task_type is singleTask"
+    ] = None,
+    parent_project_name: Annotated[
+        Optional[str],
+        "Must be provided if task_type is projectGanttTasks or projectTasks",
+    ] = None,
+):
+    """Show task(s) to the user"""
+    response = AiActionRequestModel(
+        action_request_type=AiActionRequestType.SHOW_TASKS,
+        args={
+            "task_id": task_id,
+            "task_name": task_name,
+            "parent_project_name": parent_project_name,
+            "task_type": task_type,
         },
     )
     return json.dumps(response.to_dict())
@@ -78,6 +120,12 @@ def find_tasks(
     task_created_date_end: Annotated[
         Optional[str], "Get all tasks created before this date"
     ] = None,
+    task_updated_date_start: Annotated[
+        Optional[str], "Get all tasks updated after this date"
+    ] = None,
+    task_updated_date_end: Annotated[
+        Optional[str], "Get all tasks updated before this date"
+    ] = None,
     # task_due_dates_to_get: Annotated[
     #     Optional[list[str]], "Due dates of tasks to get"
     # ] = None,
@@ -97,7 +145,7 @@ def find_tasks(
     assigned_user_names: Annotated[Optional[list[str]], ""] = None,
     # get_overdue_tasks_only: Annotated[Optional[bool], ""] = None,
 ) -> str:
-    """Find tasks"""
+    """Find several tasks based on several search criteria"""
     response = AiInfoRequestModel(
         info_request_type=AiInfoRequestType.FIND_TASKS,
         args={
@@ -119,6 +167,8 @@ def find_tasks(
             "task_due_date_end": task_due_date_end,
             "task_created_date_start": task_created_date_start,
             "task_created_date_end": task_created_date_end,
+            "task_updated_date_start": task_updated_date_start,
+            "task_updated_date_end": task_updated_date_end,
             # "get_overdue_tasks_only": get_overdue_tasks_only,
         },
     )
@@ -127,6 +177,7 @@ def find_tasks(
 
 @tool
 def update_task_fields(
+    task_id: Annotated[str, ""],
     task_name: Annotated[str, ""],
     task_description: Annotated[Optional[str], ""] = None,
     task_start_date: Annotated[Optional[str], ""] = None,
@@ -146,6 +197,7 @@ def update_task_fields(
     response = AiActionRequestModel(
         action_request_type=AiActionRequestType.UPDATE_TASK_FIELDS,
         args={
+            "task_id": task_id,
             "task_name": task_name,
             "task_description": task_description,
             "task_due_date": task_due_date,
@@ -161,11 +213,17 @@ def update_task_fields(
 
 
 @tool
-def delete_task(task_name: Annotated[str, ""]) -> str:
+def delete_task(
+    task_id: Annotated[str, ""],
+    task_name: Annotated[str, ""],
+) -> str:
     """Delete a task"""
     response = AiActionRequestModel(
         action_request_type=AiActionRequestType.DELETE_TASK,
-        args={"task_name": task_name},
+        args={
+            "task_id": task_id,
+            "task_name": task_name,
+        },
     )
     return json.dumps(response.to_dict())
 
@@ -187,6 +245,7 @@ def delete_task(task_name: Annotated[str, ""]) -> str:
 def get_tools():
     return [
         create_task,
+        show_tasks,
         find_tasks,
         update_task_fields,
         delete_task,
@@ -197,6 +256,7 @@ def get_tools():
 def get_ai_request_tools():
     return [
         create_task,
+        show_tasks,
         find_tasks,
         update_task_fields,
         delete_task,

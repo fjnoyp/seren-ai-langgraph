@@ -30,6 +30,12 @@ class AiActionRequestType(Enum):
     DELETE_TASK = "delete_task"
     ASSIGN_USER_TO_TASK = "assign_user_to_task"
     ADD_COMMENT_TO_TASK = "add_comment_to_task"
+    SHOW_TASKS = "show_tasks"
+    CREATE_NOTE = "create_note"
+    UPDATE_NOTE = "update_note"
+    SHARE_NOTE = "share_note"
+    DELETE_NOTE = "delete_note"
+    SHOW_NOTES = "show_notes"
 
 
 class AiActionRequestModel(AiToolRequestModel):
@@ -83,6 +89,7 @@ class AiInfoRequestType(Enum):
     SHIFT_ASSIGNMENTS = "shift_assignments"
     SHIFT_LOGS = "shift_logs"
     FIND_TASKS = "find_tasks"
+    FIND_NOTES = "find_notes"
 
 
 class AiInfoRequestModel(AiToolRequestModel):

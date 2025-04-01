@@ -92,19 +92,19 @@ graph_builder.add_node("tool_caller", node_tool_caller)
 graph_builder.add_edge("tool_caller", "tools")
 
 
-def node_tool_executor(state: AgentState, config: RunnableConfig):
+# def node_tool_executor(state: AgentState, config: RunnableConfig):
 
-    # Providing context allows tools to be auto called with certain parameter values
+#     # Providing context allows tools to be auto called with certain parameter values
 
-    # user_id = config["configurable"].get("user_id")
-    # org_id = config["configurable"].get("org_id")
+#     # user_id = config["configurable"].get("user_id")
+#     # org_id = config["configurable"].get("org_id")
 
-    # Set the tool context with user and org information (UNUSED FOR NOW - as ai makes requests to client directly instead)
-    # with set_tool_context({"timezone": timezone, "language": language}):
-    return ToolNode(get_all_tools()).invoke(state)  # , config)
+#     # Set the tool context with user and org information (UNUSED FOR NOW - as ai makes requests to client directly instead)
+#     # with set_tool_context({"timezone": timezone, "language": language}):
+#     return ToolNode(get_all_tools()).ainvoke(state)  # , config)
 
 
-graph_builder.add_node("tools", node_tool_executor)
+graph_builder.add_node("tools", ToolNode(get_all_tools()))
 
 graph_builder.add_edge("tools", "execute_ai_request_on_client")
 

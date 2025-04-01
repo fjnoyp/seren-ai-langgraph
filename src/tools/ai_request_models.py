@@ -95,7 +95,6 @@ class AiInfoRequestType(Enum):
 class AiInfoRequestModel(AiToolRequestModel):
     info_request_type: AiInfoRequestType
     args: dict[str, str] = None  # Make args optional / nullable
-    show_only: bool = True  # If True, only shows the info without further actions
 
     def __init__(
         self,
@@ -114,7 +113,6 @@ class AiInfoRequestModel(AiToolRequestModel):
             {
                 "info_request_type": self.info_request_type.value,
                 "args": self.args,
-                "show_only": self.show_only,
             }
         )
         return base_dict

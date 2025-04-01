@@ -83,14 +83,16 @@ def node_tool_caller(state: AgentState, config: RunnableConfig):
                 "next_node": "",
             }
         else:
-            # No tool call made
+            # No tool call made - but we need to route to planner instead of retrying
+            # since direct retries seem to cause cancellation errors
             return Command(
-                goto="tools",
+                goto="planner",  # Route to planner instead of direct retry
                 update={
-                    "prev_node_feedback": f"ERROR: You must call a tool in the tool_calls output and not respond via content! Please try again: {prev_node_feedback}",
+                    "prev_node_feedback": f"ERROR: The system failed to generate a proper tool call. Let's reconsider or retry our approach: {prev_node_feedback}",
                     "iteration_count": state.get("iteration_count", 0) + 1,
-                    "next_node": "tool_caller",
+                    "next_node": "",
                 },
+                graph=Command.PARENT,
             )
     except Exception as e:
         # Exception during tool call
@@ -101,4 +103,5 @@ def node_tool_caller(state: AgentState, config: RunnableConfig):
                 "iteration_count": state.get("iteration_count", 0) + 1,
                 "next_node": "",
             },
+            graph=Command.PARENT,
         )

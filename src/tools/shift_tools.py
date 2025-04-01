@@ -34,9 +34,6 @@ def get_shift_assignments(
     daysToGet: Annotated[
         list[str], ""
     ],  # List of days to get in YYYY/MM/DD format. Use date - date to get between two dates" ],
-    show_only: Annotated[
-        bool, "If True, only shows the shift info without further actions"
-    ] = False,
     show_to_user: Annotated[
         bool,
         "Controls UI visibility",
@@ -50,9 +47,8 @@ def get_shift_assignments(
             "day_offsets_to_get": 0,
             # TODO - New field to support:
             "days_to_get": daysToGet,
+            "show_to_user": show_to_user,
         },
-        show_only=show_only,
-        show_to_user=show_to_user,
     )
     return json.dumps(response.to_dict())
 
@@ -78,9 +74,8 @@ def get_shift_logs(
             "day_offsets_to_get": 0,
             # TODO - New field to support:
             "days_to_get": daysToGet,
+            "show_to_user": show_to_user,
         },
-        show_only=show_only,
-        show_to_user=show_to_user,
     )
     return json.dumps(response.to_dict())
 
@@ -115,7 +110,8 @@ def get_current_shift_info(
     """Gets information about the current shift."""
     response = AiInfoRequestModel(
         info_request_type=AiInfoRequestType.CURRENT_SHIFT,
-        show_only=show_only,
-        show_to_user=show_to_user,
+        args={
+            "show_to_user": show_to_user,
+        },
     )
     return json.dumps(response.to_dict())

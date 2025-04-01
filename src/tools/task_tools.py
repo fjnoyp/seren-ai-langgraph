@@ -45,8 +45,8 @@ def create_task(
             "estimate_duration_minutes": estimate_duration_minutes,
             "assigned_user_names": assigned_user_names,
             "parent_project_name": parent_project_name,
+            "show_to_user": show_to_user,
         },
-        show_to_user=show_to_user,
     )
     return json.dumps(response.to_dict())
 
@@ -68,8 +68,8 @@ def add_comment_to_task(
             "task_id": task_id,
             "task_name": task_name,
             "comment": comment,
+            "show_to_user": show_to_user,
         },
-        show_to_user=show_to_user,
     )
     return json.dumps(response.to_dict())
 
@@ -136,12 +136,6 @@ def find_tasks(
     task_updated_date_end: Annotated[
         Optional[str], "Get all tasks updated before this date"
     ] = None,
-    # task_due_dates_to_get: Annotated[
-    #     Optional[list[str]], "Due dates of tasks to get"
-    # ] = None,
-    # task_created_dates_to_get: Annotated[
-    #     Optional[list[str]], "Created dates of tasks to get"
-    # ] = None,
     task_status: Annotated[
         Optional[str], "Must be: open, inProgress, or closed - STRICT_ENUM"
     ] = None,
@@ -153,7 +147,6 @@ def find_tasks(
     parent_project_name: Annotated[Optional[str], ""] = None,
     author_user_name: Annotated[Optional[str], ""] = None,
     assigned_user_names: Annotated[Optional[list[str]], ""] = None,
-    # get_overdue_tasks_only: Annotated[Optional[bool], ""] = None,
     show_to_user: Annotated[
         Optional[bool],
         "Controls UI visibility",
@@ -175,17 +168,14 @@ def find_tasks(
             "parent_project_name": parent_project_name,
             "author_user_name": author_user_name,
             "assigned_user_names": assigned_user_names,
-            # "task_due_dates_to_get": task_due_dates_to_get,
-            # "task_created_dates_to_get": task_created_dates_to_get,
             "task_due_date_start": task_due_date_start,
             "task_due_date_end": task_due_date_end,
             "task_created_date_start": task_created_date_start,
             "task_created_date_end": task_created_date_end,
             "task_updated_date_start": task_updated_date_start,
             "task_updated_date_end": task_updated_date_end,
-            # "get_overdue_tasks_only": get_overdue_tasks_only,
+            "show_to_user": show_to_user,
         },
-        show_to_user=show_to_user,
     )
     return json.dumps(response.to_dict())
 
@@ -226,8 +216,8 @@ def update_task_fields(
             "estimate_duration_minutes": estimate_duration_minutes,
             "assigned_user_names": assigned_user_names,
             "parent_project_name": parent_project_name,
+            "show_to_user": show_to_user,
         },
-        show_to_user=show_to_user,
     )
     return json.dumps(response.to_dict())
 

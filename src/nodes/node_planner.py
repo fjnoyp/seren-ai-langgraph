@@ -105,6 +105,8 @@ def node_planner(state: AgentState, config):
     - "tool_caller" - when a tool needs to be called (REQUIRED for any data operations)
     - "response_generator" - ONLY when all needed information has been gathered and we're ready for final response
 
+    The tool_caller can only call one tool at a time. If you need to call multiple tools, you must plan for that.
+
     Example:
     - For "show task details" -> Use tool_caller first to fetch the task data
     - For "create task" -> Use tool_caller to create the task

@@ -15,7 +15,8 @@ from langchain_core.messages import (
     SystemMessage,
 )
 
-from src.llm_config import single_call_llm, llm
+# Remove the global import that causes circular dependency
+# from src.llm_config import single_call_llm, llm
 
 
 # === NOTE TOOLS ===
@@ -33,8 +34,11 @@ def create_note(
     """Create a note"""
     response = AiActionRequestModel(
         action_request_type=AiActionRequestType.CREATE_NOTE,
-        args={"note_name": note_name, "note_description": note_description},
-        show_to_user=show_to_user,
+        args={
+            "note_name": note_name,
+            "note_description": note_description,
+            "show_to_user": show_to_user,
+        },
     )
     return json.dumps(response.to_dict())
 
@@ -44,6 +48,13 @@ class NoteEditOperation(BaseModel):
 
     type: str = Field(description="Type of edit operation: 'keep', 'remove', or 'add'")
     text: str = Field(description="The text content for this operation")
+
+
+# Add this new class after NoteEditOperation
+class NoteEditOperationList(BaseModel):
+    """List of edit operations for a note"""
+
+    operations: list[NoteEditOperation] = Field(description="List of edit operations")
 
 
 # TODO p2 - issue is AI might call this before knowing what the note content is
@@ -63,7 +74,10 @@ async def update_note_description(
 ) -> str:
     """Update the description of a note"""
 
-    # 1 ) get the note and load its description ow
+    # Import llm here to avoid circular imports
+    from src.llm_config import llm
+
+    # 1 ) get the note and load its description
     note_description = await get_note_description_by_id(note_id)
 
     # 2 ) prompt an ai to generate the note diffs
@@ -83,11 +97,11 @@ async def update_note_description(
 
     Example output:
     [
-        {"type": "keep", "text": "We "},
-        {"type": "remove", "text": "were working"},
-        {"type": "add", "text": "are working"},
-        {"type": "keep", "text": " on the project yesterday"},
-        {"type": "add", "text": " and made good progress"}
+        {{"type": "keep", "text": "We "}},
+        {{"type": "remove", "text": "were working"}},
+        {{"type": "add", "text": "are working"}},
+        {{"type": "keep", "text": " on the project yesterday"}},
+        {{"type": "add", "text": " and made good progress"}}
     ]
 
     Previous note description: {note_description}
@@ -97,14 +111,35 @@ async def update_note_description(
     """
     system_message = SystemMessage(content=system_content)
 
-    # Use structured output to get edit operations
-    structured_llm = llm.with_structured_output(list[NoteEditOperation])
-    update_note_description_response = structured_llm.invoke(system_message)
+    # Add retry logic for handling malformed responses
+    max_retries = 3
+    attempts = 0
+    success = False
 
-    # Convert to JSON for response
-    edit_operations_json = json.dumps(
-        [op.model_dump() for op in update_note_description_response]
-    )
+    while attempts < max_retries and not success:
+        try:
+            attempts += 1
+            # Use structured output with the wrapper class
+            structured_llm = llm.with_structured_output(NoteEditOperationList)
+            response = await structured_llm.ainvoke([system_message])
+
+            # Convert to JSON for response
+            edit_operations_json = json.dumps(
+                [op.model_dump() for op in response.operations]
+            )
+            success = True
+        except ValueError as e:
+            if attempts >= max_retries:
+                return json.dumps(
+                    {
+                        "status": "error",
+                        "message": f"Failed to generate valid edit operations after {max_retries} attempts: {str(e)}",
+                    }
+                )
+
+            # Update the system message with error feedback for retry
+            error_feedback = f"\nPrevious attempt failed with error: {str(e)}. Please ensure you're returning a valid JSON array of operations with correct 'type' and 'text' fields."
+            system_message = SystemMessage(content=system_content + error_feedback)
 
     # 3 ) return the diffs for the client to show
     response = AiActionRequestModel(
@@ -112,8 +147,8 @@ async def update_note_description(
         args={
             "note_name": note_name,
             "updated_note_description": edit_operations_json,
+            "show_to_user": show_to_user,
         },
-        show_to_user=show_to_user,
     )
     return json.dumps(response.to_dict())
 
@@ -139,8 +174,8 @@ def find_notes(
             "note_created_date_end": note_created_date_end,
             "note_updated_date_start": note_updated_date_start,
             "note_updated_date_end": note_updated_date_end,
+            "show_to_user": show_to_user,
         },
-        show_to_user=show_to_user,
     )
     return json.dumps(response.to_dict())
 
@@ -184,6 +219,7 @@ def show_notes(
 def get_tools():
     return [
         create_note,
+        update_note_description,
         find_notes,
         share_note,
         delete_note,
@@ -194,6 +230,7 @@ def get_tools():
 def get_ai_request_tools():
     return [
         create_note,
+        update_note_description,
         find_notes,
         share_note,
         delete_note,

@@ -30,14 +30,14 @@ class PlannerDecision(BaseModel):
     """Decision output from the planning node"""
 
     plan: str = Field(
-        description="Plan of what's been done and everything that still needs to be done"
+        description="Scratchpad for everything that's been done and everything that still needs to be done to help you decide what to do next"
     )
 
     next_node: str = Field(
         description="Which ai node to run next, MUST BE ONLY 'tool_caller' to call a tool, or 'response_generator' for generating a message for the user to see."
     )
     next_node_instructions: str = Field(
-        description="Instructions to the next ai node what needs to be done next"
+        description="Detailed instructions for everything the next_node needs to do or know to complete its part of your plan"
     )
 
 
@@ -78,39 +78,56 @@ def node_planner(state: AgentState, config):
     )
 
     # Create planning system message
-    system_content = f"""
-    You coordinate a plan and determine which ai needs to run next to perform that plan. 
+    system_content = f"""    
+    YOUR PURPOSE: 
+    You are an expert planner that orchestrates the completion of user requests by coordinating between a "tool_caller" node (which executes tools) and a "response_generator" node (which communicates with the user).
 
-    The user sees the following UI - this might affect what they want to do next: {ui_context}
-    
-    Last Plan: {current_plan}
+    YOUR JOB: 
+    1. ANALYZE the user's request and determine required steps to complete it
+    2. UPDATE your plan based on new information and feedback
+    3. DECIDE which node to activate next and provide specific instructions
+    4. TRACK progress toward completion of the user's request
 
-    Previous Node Feedback: {prev_node_feedback}
+    ROUTING DECISION RULES:
+    - "tool_caller" → Use when ANY information needs to be fetched or actions need to be performed
+      * REQUIRED for ALL data operations (create, read, update, delete)
+      * Can only call ONE tool at a time - plan for sequential calls if needed
+      * Provide detailed instructions in "next_node_instructions" explaining exactly what tool to use and how
     
-    CURRENT ITERATION: {iteration_count + 1}/10
+    - "response_generator" → Use ONLY when:
+      * ALL necessary information has been gathered
+      * NO MORE tool operations are needed
+      * You're ready to deliver the final response to the user
+
+    PLANNING STRATEGIES:
+    - BREAK complex requests into sequential tool calls
+    - GATHER all required information before attempting data modifications
+    - VERIFY operations with follow-up tool calls when appropriate
+    - PRIORITIZE data retrieval before attempting actions
     
-    AVAILABLE TOOLS the tool ai can use: 
+    EXAMPLES:
+    - For "user: write a note about tasks updated today":
+      1. Use tool_caller to fetch tasks updated today
+      2. Use tool_caller to create a new note with the task summary
+      3. Use response_generator to confirm note creation to the user
+    
+    - For "user: create a task due tomorrow":
+      1. Use tool_caller to create the task with tomorrow's due date
+      2. Use tool_caller to verify the task was created
+      3. Use response_generator to confirm creation to the user
+    
+    - For "user: what tasks are due today?":
+      1. Use tool_caller to fetch tasks with today's due date
+      2. Use response_generator to provide a formatted list of today's tasks
+    
+    CONTEXTUAL INFORMATION:
+    - Current UI context: {ui_context}
+    - Your current plan: {current_plan}
+    - Previous node feedback: {prev_node_feedback}
+    - Current iteration: {iteration_count + 1}/10 (will terminate at 10)
+    
+    AVAILABLE TOOLS:
     {json.dumps(available_tools, indent=2)}
-    
-    Your job is to:
-    1. UPDATE the current plan based on the conversation and any feedback
-    2. DECIDE which ai should run next, and provide detailed instructions to them what to do. 
-
-    IMPORTANT ROUTING RULES:
-    - ALWAYS use "tool_caller" when information needs to be fetched or actions need to be performed
-    - Only use "response_generator" when ALL necessary information has been gathered and NO MORE TOOLS are needed
-    - If a task needs to be viewed, created, updated, or deleted, ALWAYS call the appropriate tool first
-
-    For next_node, you MUST ONLY use one of these exact values:
-    - "tool_caller" - when a tool needs to be called (REQUIRED for any data operations)
-    - "response_generator" - ONLY when all needed information has been gathered and we're ready for final response
-
-    The tool_caller can only call one tool at a time. If you need to call multiple tools, you must plan for that.
-
-    Example:
-    - For "show task details" -> Use tool_caller first to fetch the task data
-    - For "create task" -> Use tool_caller to create the task
-    - Only use response_generator after tools have completed their work
     """
 
     # Add system message

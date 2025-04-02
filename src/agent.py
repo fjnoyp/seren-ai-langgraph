@@ -89,20 +89,33 @@ graph_builder.add_edge("response_generator", END)
 # === TOOL EXECUTOR
 graph_builder.add_node("tool_caller", node_tool_caller)
 
-graph_builder.add_edge("tool_caller", "tools")
 
+# Add conditional edge for tool_caller to route based on next_node
+def edge_tool_caller_decision(state: AgentState):
+    next_node = state.get("next_node", "")
+    if next_node == "planner":
+        return "planner"  # Route to planner on errors
+    else:
+        return "tools"  # Normal flow to tools
+
+
+# Conditional edge for tool_caller
+graph_builder.add_conditional_edges(
+    "tool_caller",
+    edge_tool_caller_decision,
+    {
+        "planner": "planner",  # Route to planner on errors
+        "tools": "tools",  # Normal successful flow
+    },
+)
 
 # def node_tool_executor(state: AgentState, config: RunnableConfig):
-
 #     # Providing context allows tools to be auto called with certain parameter values
-
 #     # user_id = config["configurable"].get("user_id")
 #     # org_id = config["configurable"].get("org_id")
-
 #     # Set the tool context with user and org information (UNUSED FOR NOW - as ai makes requests to client directly instead)
 #     # with set_tool_context({"timezone": timezone, "language": language}):
 #     return ToolNode(get_all_tools()).ainvoke(state)  # , config)
-
 
 graph_builder.add_node("tools", ToolNode(get_all_tools()))
 

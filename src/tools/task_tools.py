@@ -25,7 +25,9 @@ def create_task(
         Optional[str], "Must be: open, inProgress, or closed"
     ] = None,
     estimate_duration_minutes: Annotated[Optional[int], 0] = None,
-    assigned_user_names: Annotated[Optional[list[str]], ""] = None,
+    assigned_user_names: Annotated[
+        Optional[list[str]], "Return an empty list [] to search for unassigned tasks"
+    ] = None,
     parent_project_name: Annotated[Optional[str], ""] = None,
     show_to_user: Annotated[
         Optional[bool],

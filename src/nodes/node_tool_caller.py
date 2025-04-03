@@ -53,17 +53,11 @@ def node_tool_caller(state: AgentState, config: RunnableConfig):
         system_content = f"""
         YOUR PURPOSE:
         You are a tool executor that translates instructions into precise tool calls. 
-        You MUST ALWAYS respond using ONLY a structured tool call format.
 
         CURRENT TASK:
         {prev_node_feedback}
 
-        PLAN CONTEXT:
-        {plan}
-
         REQUIREMENTS:
-        - RESPOND ONLY with a properly formatted tool call
-        - DO NOT include explanatory text outside the tool call
         - SELECT the appropriate tool for the task
         - PROVIDE all required parameters for the selected tool
         - DO NOT return an empty response

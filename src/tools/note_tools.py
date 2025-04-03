@@ -61,12 +61,16 @@ class NoteEditOperationList(BaseModel):
 # We might have to build checks into this that force ai to get note description before and a separate step to generate the note diffs
 @tool
 async def update_note_description(
-    note_id: Annotated[str, ""],
-    note_name: Annotated[str, ""],
+    note_id: Annotated[str, "ID of the note to update"],
+    note_name: Annotated[str, "Name of the note"],
     note_description_changes: Annotated[
         str,
-        "A description of the desired changes to the note description to be executed by another AI step",
-    ] = None,
+        "Full detailed description including all relevant information on what needs to change. Do not just say 'update the note' or 'update the description' or 'update the content'. Say what specifically needs to be changed like add user completed the task 1 with priority high and also task 2 with priority low, etc.",
+    ],
+    previous_note_description: Annotated[
+        str,
+        "The current content of the note before changes",
+    ],
     show_to_user: Annotated[
         Optional[bool],
         "Controls UI visibility",
@@ -78,7 +82,7 @@ async def update_note_description(
     from src.llm_config import llm
 
     # 1 ) get the note and load its description
-    note_description = await get_note_description_by_id(note_id)
+    # note_description = await get_note_description_by_id(note_id)
 
     # 2 ) prompt an ai to generate the note diffs
     system_content = f"""
@@ -104,8 +108,8 @@ async def update_note_description(
         {{"type": "add", "text": " and made good progress"}}
     ]
 
-    Previous note description: {note_description}
-    Changes to the note description: {note_description_changes}    
+    Previous note description: {previous_note_description}
+    Requested changes: {note_description_changes}    
     
     Respond only with the JSON array of operations.
     """

@@ -29,34 +29,44 @@ def node_response_generator(state: AgentState, config: RunnableConfig):
 
     # Create system message for response generation
     system_content = f"""
-    You need to generate a helpful response to the user.
+    YOUR ROLE: You are the final communication layer that synthesizes information and presents it to the user in a clear, natural way.
     
-    PLAN CONTEXT:
-    {plan}
+    IMPORTANT CONTEXT:
+    - Plan summary: {plan}
+    - Previous node information: {prev_node_feedback}
+    - Current UI context: {ui_context}
+    - Current time: {current_datetime}
     
-    PREVIOUS NODE FEEDBACK:
-    {prev_node_feedback}
+    YOUR TASK:
+    1. Analyze the conversation and all available information
+    2. Extract the key results and actions that have been performed
+    3. Synthesize a natural, helpful response that:
+       - Directly answers the user's original query
+       - DOES NOT REPEAT anything mentioned in a previous message for the user (unless it's very important)
+       - Explains what actions were taken on their behalf
+       - Presents information in a clear, organized way
+       - Uses natural language (not technical jargon or raw function calls)
+       - Matches the user's language style
     
-    INSTRUCTIONS:
-    - Provide a direct, helpful response to the user's original query
-    - If tools were used, include the information gathered or actions performed
-    - Keep your response concise and to the point
-    - DO NOT mention the internal planning process
+    CRITICAL REQUIREMENTS:
+    - NEVER show raw function calls, JSON, or technical syntax to the user
+    - NEVER mention the internal planning process or node names
+    - NEVER refer to "tools" or "functions" in your response
+    - DO translate technical operations into human terms (e.g., "I've created a task" instead of "create_task function called")
+    - DO respond naturally as if you performed all the actions yourself
+    - DO focus on providing clear value and information the user requested
+    - DO keep responses concise yet complete
     
-    The current date and time is: {current_datetime}
-    Respond in the same language as the user's query
-
-    Current UI Context: {ui_context}
+    If you find tool results in the message history, interpret and explain them in natural language.
     """
 
-    # Get recent message context
+    # Get recent message context - include more context to ensure we have enough information
     context_messages = trim_messages(
         messages,
         strategy="last",
         token_counter=len,
-        max_tokens=10,
+        max_tokens=12,  # Increased context window
         start_on="human",
-        end_on=("human", "tool", "ai"),
         include_system=False,
     )
 

@@ -12,6 +12,7 @@ from enum import Enum
 class AiBehaviorMode(Enum):
     CHAT = "chat"
     SINGLE_CALL = "single_call"
+    FILE_PROCESSOR = "file_processor"
 
 
 class AgentState(TypedDict):

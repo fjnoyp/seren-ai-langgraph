@@ -29,6 +29,7 @@ def create_task(
         Optional[list[str]], "Return an empty list [] to search for unassigned tasks"
     ] = None,
     parent_project_name: Annotated[Optional[str], ""] = None,
+    parent_project_id: Annotated[Optional[str], ""] = None,
     show_to_user: Annotated[
         Optional[bool],
         "Controls UI visibility",
@@ -47,6 +48,7 @@ def create_task(
             "estimate_duration_minutes": estimate_duration_minutes,
             "assigned_user_names": assigned_user_names,
             "parent_project_name": parent_project_name,
+            "parent_project_id": parent_project_id,
             "show_to_user": show_to_user,
         },
     )

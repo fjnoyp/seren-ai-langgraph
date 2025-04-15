@@ -15,11 +15,14 @@ from langchain_core.runnables.config import RunnableConfig
 from src.agent_state import AgentState, AiBehaviorMode
 
 from src.config_schema import ConfigSchema
+from src.nodes.node_file_processor import node_file_retriever, node_task_creator
 from src.tools import tools
 from src.tools.tools import get_ai_request_tools, get_all_tools
+from src.tools.task_tools import create_task
+from src.supabase.supabase_file_methods import get_file_tools
 
 # Import LLM configurations
-from src.llm_config import single_call_llm
+from src.llm_config import single_call_llm, file_processor_llm_with_tools
 
 # Import the new node implementations
 from src.nodes.node_planner import node_planner
@@ -46,7 +49,7 @@ def edge_route_by_ai_behavior_mode(state: AgentState):
 graph_builder.add_conditional_edges(
     START,
     edge_route_by_ai_behavior_mode,
-    {"chat": "planner", "single_call": "single_call"},
+    {"chat": "planner", "single_call": "single_call", "file_processor": "file_retriever"},
 )
 
 
@@ -56,6 +59,21 @@ def node_single_call(state: AgentState, config: RunnableConfig):
 
 
 graph_builder.add_node("single_call", node_single_call)
+
+
+# === FILE PROCESSOR ===
+# Retrieve the file content from supabase
+graph_builder.add_node("file_retriever", node_file_retriever)
+graph_builder.add_node("file_content_tools", ToolNode(get_file_tools()))
+
+# Create the task based on the file content
+graph_builder.add_node("task_creator", node_task_creator)
+graph_builder.add_node("create_task_tool", ToolNode([create_task]))
+
+graph_builder.add_edge("file_retriever", "file_content_tools")
+graph_builder.add_edge("file_content_tools", "task_creator")
+graph_builder.add_edge("task_creator", "create_task_tool")
+graph_builder.add_edge("create_task_tool", END)
 
 
 # === PLANNER - Decide next step
